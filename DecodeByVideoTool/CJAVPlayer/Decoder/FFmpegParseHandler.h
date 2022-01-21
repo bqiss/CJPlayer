@@ -16,7 +16,6 @@ typedef struct MySampleBuffer {
     int serial;
     BOOL isLastPacket;
     BOOL isFirstFrame;
-    BOOL isNeedResetTimebase;
 }MySampleBuffer;
 
 

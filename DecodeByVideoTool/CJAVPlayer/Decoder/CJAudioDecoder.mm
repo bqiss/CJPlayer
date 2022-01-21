@@ -149,7 +149,7 @@ static int packetSerial = 0;
             audioData.duration = duration;
             audioData.asbd = &asbd;
             audioData.isNeedReseTimebase = myPacket.isNeedResetTimeBase;
-
+            audioData.serial = myPacket.serial;
 
             if ([self.delegate respondsToSelector:@selector(getAudioDecodeDataByFFmpeg:serial:isFirstFrame:)]) {
                 [self.delegate getAudioDecodeDataByFFmpeg:&audioData serial:packetSerial isFirstFrame:m_isFirstFrame];
@@ -201,7 +201,7 @@ static int packetSerial = 0;
     AudioStreamBasicDescription ffmpegAudioFormat = {
         .mSampleRate         =  sampleRate,
         .mFormatID           = kAudioFormatLinearPCM,
-        .mChannelsPerFrame   = static_cast<UInt32>(codecPar -> channels),
+        .mChannelsPerFrame   = 2,
         .mFormatFlags        = 12,
         .mBitsPerChannel     = 16,
         .mBytesPerPacket     = 4,

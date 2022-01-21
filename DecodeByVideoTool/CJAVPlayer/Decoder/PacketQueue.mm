@@ -53,6 +53,7 @@ struct Queue {
     queue->last_pkt = NULL;
     queue->recycle_pkt = NULL;
     queue->count = 0;
+    queue->serial = 0;
 }
 
 - (int) QueueEmpty {
@@ -196,6 +197,8 @@ struct Queue {
 }
 
 #pragma mark private
+
+//put the packet into the queue
 - (int)packet_queue_put_private:(MyPacket *)pkt {
     MyPacketList *pkt1;
 

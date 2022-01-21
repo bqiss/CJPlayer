@@ -115,6 +115,7 @@
                 }
                 struct XDXParseVideoDataInfo videoInfo = [self.parseHandler parseVideoPacket:packet];
                 av_packet_unref(&packet);
+                videoInfo.serial = myPacket.serial;
                  [self.vtDecoder startDecodeVideoData:&videoInfo];
                 free(videoInfo.data);
                 free(videoInfo.extraData);
@@ -161,8 +162,8 @@
     if (_delegate && [_delegate respondsToSelector:@selector(CJDecoderGetAudioSampleBufferCallback: isFirstFrame:)]) {
         MySampleBuffer mySamplebuffer = {0};
         mySamplebuffer.sampleBuffer = sampleBuffer;
-        mySamplebuffer.serial = serial;
-        mySamplebuffer.isNeedResetTimebase = audioData -> isNeedReseTimebase;
+        mySamplebuffer.serial = audioData -> serial;
+
         [_delegate CJDecoderGetAudioSampleBufferCallback:&mySamplebuffer isFirstFrame:isFirstFrame];
     }
     CFRelease(sampleBuffer);

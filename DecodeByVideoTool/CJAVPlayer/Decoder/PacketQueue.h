@@ -38,9 +38,9 @@ typedef struct MyPacket {
 - (int)getQueueSize;
 - (int)getQueuePacketCount;
 
-- (int)packet_queue_put:(MyPacket *)pkt;
+- (int) packet_queue_put:(MyPacket *)pkt;
 - (int) packet_queue_put_nullpacket:(int)streamIndex;
-- (void)packet_queue_flush;
+- (void) packet_queue_flush;
 - (int) packet_queue_get:(MyPacket *)pkt;
 @end
 

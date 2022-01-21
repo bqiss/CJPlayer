@@ -33,7 +33,6 @@ typedef struct {
 
     Float64 last_decode_pts;
 } XDXDecoderInfo;
-static int packetSerial = 0;
 @interface VideoToolBoxDecoder ()
 {
     VTDecompressionSessionRef   _decoderSession;
@@ -45,9 +44,13 @@ static int packetSerial = 0;
     uint8_t *_lastExtraData;
     int     _lastExtraDataSize;
 
+
+    //mysamplebuffer describe
     BOOL _isFirstFrame;
     BOOL _isLastPacket;
     BOOL isNeedResetTimeBase;
+
+    int packetSerial;
 }
 
 @end
@@ -84,8 +87,7 @@ static void VideoDecoderCallback(void *decompressionOutputRefCon, void *sourceFr
             MySampleBuffer mySamplebuffer = {0};
             mySamplebuffer.sampleBuffer = samplebuffer;
             mySamplebuffer.isFirstFrame= decoder -> _isFirstFrame;
-            mySamplebuffer.serial = packetSerial;
-            mySamplebuffer.isNeedResetTimebase = decoder -> isNeedResetTimeBase;
+            mySamplebuffer.serial = decoder -> packetSerial;
             [decoder.delegate getVideoDecodeDataByVideoToolBox:&mySamplebuffer];
             if (decoder->_isFirstFrame) {
                 decoder->_isFirstFrame = NO;
@@ -120,10 +122,9 @@ static void VideoDecoderCallback(void *decompressionOutputRefCon, void *sourceFr
 #pragma mark - Public
 - (void)startDecodeVideoData:(XDXParseVideoDataInfo *)videoInfo {
 
+    //decode begin
+
     packetSerial = videoInfo -> serial;
-    if (videoInfo -> isNeedResetTimebase) {
-        isNeedResetTimeBase = YES;
-    }
 
     // get extra data
     if (videoInfo->extraData && videoInfo->extraDataSize) {
@@ -378,6 +379,7 @@ static void VideoDecoderCallback(void *decompressionOutputRefCon, void *sourceFr
                     if (i > startCodeSPSIndex) {
                         startCodeFPPSIndex = i;
                     }
+
                 }else if (videoFormat == XDXH265EncodeFormat) {
                     if (startCodeVPSIndex == 0) {
                         startCodeVPSIndex = i;
@@ -405,6 +407,7 @@ static void VideoDecoderCallback(void *decompressionOutputRefCon, void *sourceFr
     if (videoFormat == XDXH264EncodeFormat) {
         int f_ppsSize = size - (startCodeFPPSIndex + 1);
         decoderInfo->f_pps_size = f_ppsSize;
+
 
         nalu_type = ((uint8_t)data[startCodeSPSIndex + 1] & 0x1F);
         if (nalu_type == 0x07) {

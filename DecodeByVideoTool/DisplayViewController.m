@@ -73,7 +73,7 @@
     self.currentTimeLabel.text = currentTimeText;
     [self.timeView addSubview:self.currentTimeLabel];
 
-    NSURL *rtmpURL = [[NSURL alloc]initWithString:@"rtmp://mobliestream.c3tv.com:554/live/goodtv.sdp"];
+    NSURL *rtmpURL = [[NSURL alloc]initWithString:@"rtmp://ypzb-pull.webgame163.com/star/205d6bb64db0c61343853984?time=1642665603&sign=c0744144d4a71ef18684c558ac608a28&ws=_HOST_PULL_YOUJIA_8686C_"];
     self.player = [[CJAVPlayer alloc]initWithURL:self.url layerFrame:self.view.layer.frame fileType:LocalFile];
     [self.view.layer addSublayer:self.player.playLayer];
 

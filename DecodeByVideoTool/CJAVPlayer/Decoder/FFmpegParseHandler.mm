@@ -11,7 +11,7 @@
 
 #pragma mark - Global Var
 
-#define MAX_QUEUE_SIZE (15 * 1024 * 1024)
+#define MAX_QUEUE_SIZE (1024 * 1024)
 
 
 
@@ -189,6 +189,7 @@ static int GetAVStreamFPSTimeBase(AVStream *st) {
     //init flush packet
     av_init_packet(&flushPacket);
     flushPacket.data = (uint8_t *)&flushPacket;
+    
 
     int ret;
 
@@ -196,7 +197,7 @@ static int GetAVStreamFPSTimeBase(AVStream *st) {
 
     const char *infile_name;
     //@"rtmp://mobliestream.c3tv.com:554/live/goodtv.sdp"
-    infile_name = "rtmp://mobliestream.c3tv.com:554/live/goodtv.sdp";
+    infile_name = "http://192.168.99.158/video.mp4";
 
     AVDictionary     *opts          = NULL;
     if (av_stristart(infile_name, "rtmp", NULL) ||
@@ -407,7 +408,7 @@ static int GetAVStreamFPSTimeBase(AVStream *st) {
 #pragma mark Start Parse
 - (void)readFile:(PacketQueue *)videoPacketQueue audioPacketQueue:(PacketQueue *)audioPacketQueue videoState:(VideoState *)videoState {
 
-    __block BOOL isNeedResetTimebase;
+    __block BOOL isNeedThrowPacket;
     dispatch_async(parseQueue, ^{
         AVPacket    packet;
 
@@ -432,7 +433,7 @@ static int GetAVStreamFPSTimeBase(AVStream *st) {
                 [videoPacketQueue packet_queue_put:&myPacket];
                 [audioPacketQueue packet_queue_put:&myPacket];
                 videoState -> isSeekReq = NO;
-                isNeedResetTimebase = YES;
+                isNeedThrowPacket = YES;
             }
 
 
@@ -456,12 +457,28 @@ static int GetAVStreamFPSTimeBase(AVStream *st) {
                 continue;
             }
 
+            if (isNeedThrowPacket) {
+
+
+            }
+
             if (packet.stream_index == self->m_videoStreamIndex) {
                 MyPacket myPacket = {0};
-                if (isNeedResetTimebase) {
-                    myPacket.isNeedResetTimeBase = YES;
-                    isNeedResetTimebase = NO;
+
+
+                
+                if (packet.flags == 1) {
+                    NSLog(@"1");
                 }
+
+                if (isNeedThrowPacket && packet.pts * av_q2d(self -> m_formatContext->streams[self -> m_videoStreamIndex]->time_base) < videoState -> seekTimeStamp) {
+                    NSLog(@"throw video pkt: pkt.pts < seekTimeStamp!");
+
+                    continue;;
+                }else{
+                    isNeedThrowPacket = NO;
+                }
+
                 myPacket.packet = packet;
                 [videoPacketQueue packet_queue_put:&myPacket];
                 continue;
@@ -469,9 +486,11 @@ static int GetAVStreamFPSTimeBase(AVStream *st) {
 
             if (packet.stream_index == self->m_audioStreamIndex) {
                 MyPacket myPacket = {0};
-                if (isNeedResetTimebase) {
-                    myPacket.isNeedResetTimeBase = YES;
-                    isNeedResetTimebase = NO;
+                if (isNeedThrowPacket && packet.pts * av_q2d(self -> m_formatContext->streams[self -> m_audioStreamIndex]->time_base) < videoState -> seekTimeStamp) {
+                    NSLog(@"throw audio pkt: pkt.pts < seekTimeStamp!");
+                    continue;;
+                }else{
+                    isNeedThrowPacket = NO;
                 }
                 myPacket.packet = packet;
                 [audioPacketQueue packet_queue_put:&myPacket];
