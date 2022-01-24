@@ -50,6 +50,8 @@ struct XDXParseVideoDataInfo {
     Float64                 time_base;
     int                     videoRotate;
     int                     fps;
+    int                     width;
+    int                     height;
     CMSampleTimingInfo      timingInfo;
     XDXVideoEncodeFormat    videoFormat;
 };

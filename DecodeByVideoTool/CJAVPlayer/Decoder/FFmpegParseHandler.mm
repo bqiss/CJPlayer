@@ -440,7 +440,7 @@ static int GetAVStreamFPSTimeBase(AVStream *st) {
             if ([videoPacketQueue getQueueSize] + [audioPacketQueue getQueueSize] > MAX_QUEUE_SIZE) {
 
                 /* wait  10ms */
-                av_usleep(1000);
+                av_usleep(10000);
                 continue;
             }
 
@@ -453,7 +453,7 @@ static int GetAVStreamFPSTimeBase(AVStream *st) {
 
 //                [videoPacketQueue packet_queue_put_nullpacket:self->m_videoStreamIndex];
 //                [audioPacketQueue packet_queue_put_nullpacket:self->m_audioStreamIndex];
-                av_usleep(1000);
+                av_usleep(10000);
                 continue;
             }
 
@@ -466,7 +466,6 @@ static int GetAVStreamFPSTimeBase(AVStream *st) {
                 }else if (packet.pts * av_q2d(self -> m_formatContext->streams[self -> m_videoStreamIndex]->time_base) > videoState -> seekTimeStamp){
                     isNeedThrowPacket = NO;
                 }
-
                 myPacket.packet = packet;
                 [videoPacketQueue packet_queue_put:&myPacket];
                 continue;
@@ -568,6 +567,8 @@ static int GetAVStreamFPSTimeBase(AVStream *st) {
     videoInfo.fps           = fps;
     videoInfo.flags         = packet.flags;
     videoInfo.serial        = serial;
+    videoInfo.width         = m_formatContext -> streams[m_videoStreamIndex] -> codecpar -> width;
+    videoInfo.height        = m_formatContext -> streams[m_videoStreamIndex] -> codecpar -> height;
 
 
     memcpy(videoInfo.extraData, m_formatContext->streams[m_videoStreamIndex]->codec->extradata, videoInfo.extraDataSize);
@@ -575,16 +576,6 @@ static int GetAVStreamFPSTimeBase(AVStream *st) {
 
 
     return videoInfo;
-}
-
-- (void)upDateAvContextFormatFromSeekTimeStamp:(Float64)timeStamp {
-    int ret = av_seek_frame(self->m_formatContext, -1, timeStamp * AV_TIME_BASE, AVSEEK_FLAG_BACKWARD);
-    
-    NSLog(@"-----updateEnd-----");
-    if (ret < 0) {
-        NSLog(@"error while seeking!");
-        return;
-    }
 }
 
 

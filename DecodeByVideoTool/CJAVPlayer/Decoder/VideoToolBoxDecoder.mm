@@ -185,6 +185,19 @@ static void VideoDecoderCallback(void *decompressionOutputRefCon, void *sourceFr
 
 #pragma mark - private methods
 
+static void CFDictionarySetSInt32(CFMutableDictionaryRef dictionary, CFStringRef key, SInt32 numberSInt32)
+{
+    CFNumberRef number;
+    number = CFNumberCreate(NULL, kCFNumberSInt32Type, &numberSInt32);
+    CFDictionarySetValue(dictionary, key, number);
+    CFRelease(number);
+}
+
+static void CFDictionarySetBoolean(CFMutableDictionaryRef dictionary, CFStringRef key, BOOL value)
+{
+    CFDictionarySetValue(dictionary, key, value ? kCFBooleanTrue : kCFBooleanFalse);
+}
+
 #pragma mark Create / Destory decoder
 - (VTDecompressionSessionRef)createDecoderWithVideoInfo:(XDXParseVideoDataInfo *)videoInfo videoDescRef:(CMVideoFormatDescriptionRef *)videoDescRef videoFormat:(OSType)videoFormat lock:(pthread_mutex_t)lock callback:(VTDecompressionOutputCallback)callback decoderInfo:(XDXDecoderInfo)decoderInfo {
     pthread_mutex_lock(&lock);
@@ -242,11 +255,30 @@ static void VideoDecoderCallback(void *decompressionOutputRefCon, void *sourceFr
         [self destoryDecoder];
         return NULL;
     }
+    int width = videoInfo -> width;
+    int height = videoInfo -> height;
+
+    double w_scaler = (float)960 / width;
+    width = 960;
+    height = height * w_scaler;
 
     uint32_t pixelFormatType = videoFormat;
     const void *keys[]       = {kCVPixelBufferPixelFormatTypeKey};
     const void *values[]     = {CFNumberCreate(NULL, kCFNumberSInt32Type, &pixelFormatType)};
-    CFDictionaryRef attrs    = CFDictionaryCreate(NULL, keys, values, 1, NULL, NULL);
+//    CFDictionaryRef attrs    = CFDictionaryCreate(NULL, keys, values, 1, NULL, NULL);
+    CFMutableDictionaryRef destinationPixelBufferAttributes = CFDictionaryCreateMutable(
+                                                                 NULL,
+                                                                 0,
+                                                                 &kCFTypeDictionaryKeyCallBacks,
+                                                                 &kCFTypeDictionaryValueCallBacks);
+    CFDictionarySetSInt32(destinationPixelBufferAttributes,
+                          kCVPixelBufferPixelFormatTypeKey, kCVPixelFormatType_420YpCbCr8BiPlanarVideoRange);
+    CFDictionarySetSInt32(destinationPixelBufferAttributes,
+                          kCVPixelBufferWidthKey, width);
+    CFDictionarySetSInt32(destinationPixelBufferAttributes,
+                          kCVPixelBufferHeightKey, height);
+    CFDictionarySetBoolean(destinationPixelBufferAttributes,
+                          kCVPixelBufferOpenGLESCompatibilityKey, YES);
 
     VTDecompressionOutputCallbackRecord callBackRecord;
     callBackRecord.decompressionOutputCallback = callback;
@@ -256,11 +288,11 @@ static void VideoDecoderCallback(void *decompressionOutputRefCon, void *sourceFr
     status = VTDecompressionSessionCreate(kCFAllocatorDefault,
                                           *videoDescRef,
                                           NULL,
-                                          attrs,
+                                          destinationPixelBufferAttributes,
                                           &callBackRecord,
                                           &session);
 
-    CFRelease(attrs);
+    CFRelease(destinationPixelBufferAttributes);
     pthread_mutex_unlock(&lock);
     if (status != noErr) {
         //log4cplus_error(kModuleName, "%s: Create decoder failed",__func__);
