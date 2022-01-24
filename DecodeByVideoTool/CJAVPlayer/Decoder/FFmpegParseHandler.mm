@@ -457,25 +457,13 @@ static int GetAVStreamFPSTimeBase(AVStream *st) {
                 continue;
             }
 
-            if (isNeedThrowPacket) {
-
-
-            }
 
             if (packet.stream_index == self->m_videoStreamIndex) {
                 MyPacket myPacket = {0};
-
-
-                
-                if (packet.flags == 1) {
-                    NSLog(@"1");
-                }
-
-                if (isNeedThrowPacket && packet.pts * av_q2d(self -> m_formatContext->streams[self -> m_videoStreamIndex]->time_base) < videoState -> seekTimeStamp) {
+                if (isNeedThrowPacket && (packet.data[4] & 0x60) == 0){
                     NSLog(@"throw video pkt: pkt.pts < seekTimeStamp!");
-
                     continue;;
-                }else{
+                }else if (packet.pts * av_q2d(self -> m_formatContext->streams[self -> m_videoStreamIndex]->time_base) > videoState -> seekTimeStamp){
                     isNeedThrowPacket = NO;
                 }
 
@@ -488,9 +476,7 @@ static int GetAVStreamFPSTimeBase(AVStream *st) {
                 MyPacket myPacket = {0};
                 if (isNeedThrowPacket && packet.pts * av_q2d(self -> m_formatContext->streams[self -> m_audioStreamIndex]->time_base) < videoState -> seekTimeStamp) {
                     NSLog(@"throw audio pkt: pkt.pts < seekTimeStamp!");
-                    continue;;
-                }else{
-                    isNeedThrowPacket = NO;
+                    continue;
                 }
                 myPacket.packet = packet;
                 [audioPacketQueue packet_queue_put:&myPacket];

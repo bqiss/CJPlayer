@@ -153,8 +153,8 @@ static int rendererSerial = 0;
 
     if (isSeeking && sampleBuffer -> serial == rendererSerial ) {
         isSeeking = NO;
-        [self.rendererSynchronizer setRate:1 time:CMSampleBufferGetPresentationTimeStamp(sampleBuffer -> sampleBuffer)];
-        NSLog(@"timebase is reset");
+        [self.rendererSynchronizer setRate:1 time:CMTimeMake(videoState -> seekTimeStamp * AV_TIME_BASE, AV_TIME_BASE)];
+        NSLog(@"timebase is reset: %f",CMTimeGetSeconds(CMTimeMake(videoState -> seekTimeStamp * AV_TIME_BASE, AV_TIME_BASE)));
     }
 
     // if the buffer serial is not equal renderSerial, throw it
@@ -164,8 +164,8 @@ static int rendererSerial = 0;
     }
 
     //if the buffer pts is samller than the rendererSynchronizer timebase, throw it
-    if (CMTimeGetSeconds(CMSampleBufferGetPresentationTimeStamp(sampleBuffer -> sampleBuffer)) < CMTimeGetSeconds(CMTimebaseGetTime(self.rendererSynchronizer.timebase))) {
-        NSLog(@"throw buffer < timebase");
+    if (CMTimeGetSeconds(CMSampleBufferGetPresentationTimeStamp(sampleBuffer -> sampleBuffer)) < videoState -> seekTimeStamp) {
+        NSLog(@"throw buffer < seekTimeStamp");
         return;
     }
 
