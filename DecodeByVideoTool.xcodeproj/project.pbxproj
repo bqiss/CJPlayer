@@ -79,41 +79,6 @@
 		9C8E1BBA27842910009C9C6B /* SampleBufferConverter.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = SampleBufferConverter.m; sourceTree = "<group>"; };
 		9C9124532796A882008BBA5D /* PacketQueue.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PacketQueue.h; sourceTree = "<group>"; };
 		9C9124542796A882008BBA5D /* PacketQueue.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = PacketQueue.mm; sourceTree = "<group>"; };
-		9C93E0502795052F00B569B1 /* thread.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = thread.c; sourceTree = "<group>"; };
-		9C93E0512795052F00B569B1 /* rtmpdump.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = rtmpdump.c; sourceTree = "<group>"; };
-		9C93E0522795052F00B569B1 /* rtmpdump.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; path = rtmpdump.xcodeproj; sourceTree = "<group>"; };
-		9C93E0552795052F00B569B1 /* ChangeLog */ = {isa = PBXFileReference; lastKnownFileType = text; path = ChangeLog; sourceTree = "<group>"; };
-		9C93E0572795052F00B569B1 /* log.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = log.c; sourceTree = "<group>"; };
-		9C93E0582795052F00B569B1 /* librtmp.3 */ = {isa = PBXFileReference; lastKnownFileType = text; path = librtmp.3; sourceTree = "<group>"; };
-		9C93E0592795052F00B569B1 /* http.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = http.h; sourceTree = "<group>"; };
-		9C93E05A2795052F00B569B1 /* handshake.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = handshake.h; sourceTree = "<group>"; };
-		9C93E05B2795052F00B569B1 /* dh.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = dh.h; sourceTree = "<group>"; };
-		9C93E05C2795052F00B569B1 /* Makefile */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.make; path = Makefile; sourceTree = "<group>"; };
-		9C93E05D2795052F00B569B1 /* dhgroups.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = dhgroups.h; sourceTree = "<group>"; };
-		9C93E05E2795052F00B569B1 /* rtmp_sys.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = rtmp_sys.h; sourceTree = "<group>"; };
-		9C93E05F2795052F00B569B1 /* hashswf.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = hashswf.c; sourceTree = "<group>"; };
-		9C93E0602795052F00B569B1 /* rtmp.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = rtmp.c; sourceTree = "<group>"; };
-		9C93E0612795052F00B569B1 /* amf.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = amf.h; sourceTree = "<group>"; };
-		9C93E0622795052F00B569B1 /* librtmp.pc.in */ = {isa = PBXFileReference; lastKnownFileType = text; path = librtmp.pc.in; sourceTree = "<group>"; };
-		9C93E0632795052F00B569B1 /* COPYING */ = {isa = PBXFileReference; lastKnownFileType = text; path = COPYING; sourceTree = "<group>"; };
-		9C93E0642795052F00B569B1 /* log.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = log.h; sourceTree = "<group>"; };
-		9C93E0652795052F00B569B1 /* bytes.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = bytes.h; sourceTree = "<group>"; };
-		9C93E0662795052F00B569B1 /* librtmp.3.html */ = {isa = PBXFileReference; lastKnownFileType = text.html; path = librtmp.3.html; sourceTree = "<group>"; };
-		9C93E0672795052F00B569B1 /* parseurl.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = parseurl.c; sourceTree = "<group>"; };
-		9C93E0682795053000B569B1 /* amf.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = amf.c; sourceTree = "<group>"; };
-		9C93E0692795053000B569B1 /* rtmp.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = rtmp.h; sourceTree = "<group>"; };
-		9C93E06A2795053000B569B1 /* Makefile */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.make; path = Makefile; sourceTree = "<group>"; };
-		9C93E06B2795053000B569B1 /* rtmpgw.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = rtmpgw.c; sourceTree = "<group>"; };
-		9C93E06C2795053000B569B1 /* rtmpdump.1.html */ = {isa = PBXFileReference; lastKnownFileType = text.html; path = rtmpdump.1.html; sourceTree = "<group>"; };
-		9C93E06D2795053000B569B1 /* README */ = {isa = PBXFileReference; lastKnownFileType = text; path = README; sourceTree = "<group>"; };
-		9C93E06E2795053000B569B1 /* rtmpdump.1 */ = {isa = PBXFileReference; lastKnownFileType = text.man; path = rtmpdump.1; sourceTree = "<group>"; };
-		9C93E06F2795053000B569B1 /* thread.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = thread.h; sourceTree = "<group>"; };
-		9C93E0702795053000B569B1 /* COPYING */ = {isa = PBXFileReference; lastKnownFileType = text; path = COPYING; sourceTree = "<group>"; };
-		9C93E0712795053000B569B1 /* .gitignore */ = {isa = PBXFileReference; lastKnownFileType = text; path = .gitignore; sourceTree = "<group>"; };
-		9C93E0722795053000B569B1 /* rtmpgw.8.html */ = {isa = PBXFileReference; lastKnownFileType = text.html; path = rtmpgw.8.html; sourceTree = "<group>"; };
-		9C93E0732795053000B569B1 /* rtmpsrv.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = rtmpsrv.c; sourceTree = "<group>"; };
-		9C93E0742795053000B569B1 /* rtmpgw.8 */ = {isa = PBXFileReference; lastKnownFileType = text; path = rtmpgw.8; sourceTree = "<group>"; };
-		9C93E0752795053000B569B1 /* rtmpsuck.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = rtmpsuck.c; sourceTree = "<group>"; };
 		9C93E07A2795182B00B569B1 /* pem2.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = pem2.h; sourceTree = "<group>"; };
 		9C93E07B2795182B00B569B1 /* kdf.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = kdf.h; sourceTree = "<group>"; };
 		9C93E07C2795182B00B569B1 /* pem.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = pem.h; sourceTree = "<group>"; };
@@ -474,63 +439,6 @@
 			path = AudioToolBoxDecoder;
 			sourceTree = "<group>";
 		};
-		9C93E04F2795052F00B569B1 /* rtmpdump */ = {
-			isa = PBXGroup;
-			children = (
-				9C93E0502795052F00B569B1 /* thread.c */,
-				9C93E0512795052F00B569B1 /* rtmpdump.c */,
-				9C93E0522795052F00B569B1 /* rtmpdump.xcodeproj */,
-				9C93E0552795052F00B569B1 /* ChangeLog */,
-				9C93E0562795052F00B569B1 /* librtmp */,
-				9C93E06A2795053000B569B1 /* Makefile */,
-				9C93E06B2795053000B569B1 /* rtmpgw.c */,
-				9C93E06C2795053000B569B1 /* rtmpdump.1.html */,
-				9C93E06D2795053000B569B1 /* README */,
-				9C93E06E2795053000B569B1 /* rtmpdump.1 */,
-				9C93E06F2795053000B569B1 /* thread.h */,
-				9C93E0702795053000B569B1 /* COPYING */,
-				9C93E0712795053000B569B1 /* .gitignore */,
-				9C93E0722795053000B569B1 /* rtmpgw.8.html */,
-				9C93E0732795053000B569B1 /* rtmpsrv.c */,
-				9C93E0742795053000B569B1 /* rtmpgw.8 */,
-				9C93E0752795053000B569B1 /* rtmpsuck.c */,
-			);
-			path = rtmpdump;
-			sourceTree = "<group>";
-		};
-		9C93E0532795052F00B569B1 /* Products */ = {
-			isa = PBXGroup;
-			children = (
-			);
-			name = Products;
-			sourceTree = "<group>";
-		};
-		9C93E0562795052F00B569B1 /* librtmp */ = {
-			isa = PBXGroup;
-			children = (
-				9C93E0572795052F00B569B1 /* log.c */,
-				9C93E0582795052F00B569B1 /* librtmp.3 */,
-				9C93E0592795052F00B569B1 /* http.h */,
-				9C93E05A2795052F00B569B1 /* handshake.h */,
-				9C93E05B2795052F00B569B1 /* dh.h */,
-				9C93E05C2795052F00B569B1 /* Makefile */,
-				9C93E05D2795052F00B569B1 /* dhgroups.h */,
-				9C93E05E2795052F00B569B1 /* rtmp_sys.h */,
-				9C93E05F2795052F00B569B1 /* hashswf.c */,
-				9C93E0602795052F00B569B1 /* rtmp.c */,
-				9C93E0612795052F00B569B1 /* amf.h */,
-				9C93E0622795052F00B569B1 /* librtmp.pc.in */,
-				9C93E0632795052F00B569B1 /* COPYING */,
-				9C93E0642795052F00B569B1 /* log.h */,
-				9C93E0652795052F00B569B1 /* bytes.h */,
-				9C93E0662795052F00B569B1 /* librtmp.3.html */,
-				9C93E0672795052F00B569B1 /* parseurl.c */,
-				9C93E0682795053000B569B1 /* amf.c */,
-				9C93E0692795053000B569B1 /* rtmp.h */,
-			);
-			path = librtmp;
-			sourceTree = "<group>";
-		};
 		9C93E0772795182B00B569B1 /* openSSL-arm64 */ = {
 			isa = PBXGroup;
 			children = (
@@ -883,7 +791,6 @@
 			children = (
 				9C93E2A1279585A400B569B1 /* FFmpeg-iOS */,
 				9C93E0772795182B00B569B1 /* openSSL-arm64 */,
-				9C93E04F2795052F00B569B1 /* rtmpdump */,
 				9C98C6082779DD27008A22BF /* DecodeByVideoTool */,
 				9C98C6242779DD28008A22BF /* DecodeByVideoToolTests */,
 				9C98C62E2779DD28008A22BF /* DecodeByVideoToolUITests */,
@@ -1048,12 +955,6 @@
 			mainGroup = 9C98C5FD2779DD27008A22BF;
 			productRefGroup = 9C98C6072779DD27008A22BF /* Products */;
 			projectDirPath = "";
-			projectReferences = (
-				{
-					ProductGroup = 9C93E0532795052F00B569B1 /* Products */;
-					ProjectRef = 9C93E0522795052F00B569B1 /* rtmpdump.xcodeproj */;
-				},
-			);
 			projectRoot = "";
 			targets = (
 				9C98C6052779DD27008A22BF /* DecodeByVideoTool */,
