@@ -6,7 +6,7 @@
 //
 
 #import "SceneDelegate.h"
-#import "DisplayViewController.h"
+#import "ViewController.h"
 
 @interface SceneDelegate ()
 
@@ -25,7 +25,7 @@
 //    self.window = [[UIWindow alloc] initWithWindowScene:windowScene];
 //    [self.window setWindowScene:windowScene];
 //    [self.window setBackgroundColor:[UIColor whiteColor]];
-//    [self.window setRootViewController:[DisplayViewController new]];
+//    [self.window setRootViewController:[ViewController new]];
 //
 //    [self.window makeKeyAndVisible];
 }
