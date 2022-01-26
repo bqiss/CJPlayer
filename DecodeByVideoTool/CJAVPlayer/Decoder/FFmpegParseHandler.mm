@@ -82,21 +82,10 @@ static int GetAVStreamFPSTimeBase(AVStream *st) {
     });
 }
 
-- (instancetype)initWithPath:(NSString *)path fileType:(fileType)fileType videoState:(VideoState *)videoState {
+- (instancetype)initWithPath:(NSString *)path videoState:(VideoState *)videoState {
     if (self = [super init]) {
         parseQueue = dispatch_queue_create("parse_queue", DISPATCH_QUEUE_SERIAL);
-        count = 0;
-        switch (fileType) {
-            case RTMP:
-                [self prepareParseWithRTMPUrl:path];
-                break;
-            case LocalFile:
-                [self prepareParseWithPath:path];
-            default:
-                break;
-        }
-
-
+        [self prepareParseWithPath:path];
     }
     return self;
 }
@@ -275,7 +264,23 @@ static int GetAVStreamFPSTimeBase(AVStream *st) {
     AVFormatContext *formatContext = NULL;
     AVDictionary     *opts          = NULL;
 
-    av_dict_set(&opts, "timeout", "1000000", 0);//设置超时1秒
+    const char *infile_name = [filePath cStringUsingEncoding:NSUTF8StringEncoding];
+
+    if (av_stristart(infile_name, "http", NULL) ||
+        av_stristart(infile_name, "https", NULL)) {
+        // There is total different meaning for 'timeout' option in rtmp
+        avformat_network_init();
+        av_dict_set(&opts, "timeout", "2000000", 0);//设置超时2秒
+    }
+
+    if (av_stristart(infile_name, "rtmp", NULL) ||
+        av_stristart(infile_name, "rtsp", NULL)) {
+        // There is total different meaning for 'timeout' option in rtmp
+        avformat_network_init();
+        av_dict_set(&opts, "timeout", NULL, 0);
+    }else {
+        av_dict_set(&opts, "timeout", "1000000", 0);//设置超时1秒
+    }
 
     formatContext = avformat_alloc_context();
     BOOL isSuccess = avformat_open_input(&formatContext, [filePath cStringUsingEncoding:NSUTF8StringEncoding], NULL, &opts) < 0 ? NO : YES;

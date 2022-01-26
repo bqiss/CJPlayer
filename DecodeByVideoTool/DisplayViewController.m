@@ -33,8 +33,17 @@
 
 @implementation DisplayViewController
 
-- (void)viewDidLoad {
-    [super viewDidLoad];
+- (instancetype)initWithUrl:(NSURL *)url {
+    
+    if (self = [super init]) {
+        self.player = [[CJAVPlayer alloc]initWithURL:url layerFrame:self.view.layer.frame];
+        [self.view.layer addSublayer:self.player.playLayer];
+        [self setUI];
+    }
+    return self;
+}
+
+- (void)setUI {
     self.view.backgroundColor = [UIColor whiteColor];
     playBtn = [[UIButton alloc]initWithFrame:CGRectMake(self.view.center.x, self.view.center.y, 100, 100)];
     playBtn.selected = YES;
@@ -74,15 +83,13 @@
     [self.timeView addSubview:self.currentTimeLabel];
 
     NSURL *rtmpURL = [[NSURL alloc]initWithString:@"rtmp://ypzb-pull.webgame163.com/star/205d6bb64db0c61343853984?time=1642665603&sign=c0744144d4a71ef18684c558ac608a28&ws=_HOST_PULL_YOUJIA_8686C_"];
-    self.player = [[CJAVPlayer alloc]initWithURL:self.url layerFrame:self.view.layer.frame fileType:LocalFile];
-    [self.view.layer addSublayer:self.player.playLayer];
+
 
     __weak typeof(self) weakSelf = self;
-    [self.player addPeriodicTimeObserverForInterval:CMTimeMake(1, 120) queue:dispatch_queue_create("queue1", DISPATCH_QUEUE_SERIAL) usingBlock:^(CMTime time) {
+    [self.player addPeriodicTimeObserverForInterval:CMTimeMake(1, 120) queue:dispatch_get_main_queue() usingBlock:^(CMTime time) {
         __strong typeof(weakSelf) strongSelf = weakSelf;
         dispatch_async(dispatch_get_main_queue(), ^{
             strongSelf.currentTimeLabel.text = [strongSelf getStringForTime:CMTimeGetSeconds(time)];
-
             if (strongSelf->seekRequest) {
                 return;
             }
@@ -101,6 +108,10 @@
     [self.view addSubview:self.timeView];
     [self.view addSubview:self.processView];
     [self.view addSubview:playBtn];
+}
+
+- (void)viewDidLoad {
+    [super viewDidLoad];
 
 }
 
@@ -146,9 +157,6 @@
 
     [self.player seekToTime:seekTime];
     if (pan.state == UIGestureRecognizerStateEnded) {
-
-
-
         seekRequest = NO;
 
     }

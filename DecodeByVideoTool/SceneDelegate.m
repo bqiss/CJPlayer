@@ -20,12 +20,21 @@
     // If using a storyboard, the `window` property will automatically be initialized and attached to the scene.
     // This delegate does not imply the connecting scene or session are new (see `application:configurationForConnectingSceneSession` instead).
 
-//    UIWindowScene *windowScene = (UIWindowScene *)scene;
-//    self.window = [[UIWindow alloc] initWithFrame:[UIScreen mainScreen].bounds];
-//    self.window = [[UIWindow alloc] initWithWindowScene:windowScene];
-//    [self.window setWindowScene:windowScene];
-//    [self.window setBackgroundColor:[UIColor whiteColor]];
-//    [self.window setRootViewController:[ViewController new]];
+    UIWindowScene *windowScene = (UIWindowScene *)scene;
+    self.window = [[UIWindow alloc] initWithFrame:[UIScreen mainScreen].bounds];
+    self.window = [[UIWindow alloc] initWithWindowScene:windowScene];
+    [self.window setWindowScene:windowScene];
+    [self.window setBackgroundColor:[UIColor whiteColor]];
+    UINavigationController *navigationController = [[UINavigationController alloc] initWithRootViewController:[[ViewController alloc] init]];
+    [self.window setRootViewController:navigationController];
+
+    [self.window makeKeyAndVisible];
+//    self.window = [[UIWindow alloc] initWithFrame:[[UIScreen mainScreen] bounds]];
+//
+//    UINavigationController *navigationController = [[UINavigationController alloc] initWithRootViewController:[[TypeRTMPUrlViewController alloc] init]];
+//
+//    self.viewController = navigationController;
+//    self.window.rootViewController = self.viewController;
 //
 //    [self.window makeKeyAndVisible];
 }

@@ -17,6 +17,7 @@
 
 - (void)viewDidLoad {
     [super viewDidLoad];
+    [self.navigationController setNavigationBarHidden:NO animated:NO];
     self.selectBtn = [[UIButton alloc]initWithFrame:CGRectMake(100, 100, 100, 100)];
     [self.selectBtn setTitle:@"选择视频" forState:UIControlStateNormal];
     [self.selectBtn addTarget:self action:@selector(selectVideo) forControlEvents:UIControlEventTouchUpInside];

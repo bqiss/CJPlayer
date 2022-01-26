@@ -71,7 +71,7 @@ struct XDXParseVideoDataInfo {
  @param path file path
  @return the object instance
  */
-- (instancetype)initWithPath:(NSString *)path fileType:(fileType)fileType videoState:(VideoState *)videoState;
+- (instancetype)initWithPath:(NSString *)path videoState:(VideoState *)videoState;
 
 
 /**

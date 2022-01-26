@@ -30,7 +30,7 @@ static const NSNotificationName  kDecodeIsFinishNotificationKey = @"CJDeocderMan
 @property(nonatomic, assign) int64_t videoDuration;
 - (AVFormatContext *)getFormatContext;
 
-- (instancetype)initWithFilePath: (NSString *)path fileType:(fileType) fileType videoState:(VideoState *)videoState;
+- (instancetype)initWithFilePath: (NSString *)path videoState:(VideoState *)videoState;
 
 - (void)startAudioToolBoxDecoder;
 

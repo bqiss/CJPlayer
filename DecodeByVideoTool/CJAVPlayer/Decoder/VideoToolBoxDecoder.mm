@@ -535,7 +535,6 @@ static void CFDictionarySetBoolean(CFMutableDictionaryRef dictionary, CFStringRe
                                                          size,
                                                          0,
                                                          &blockBuffer);
-
     if (status == kCMBlockBufferNoErr) {
         CMSampleBufferRef sampleBuffer = NULL;
         const size_t sampleSizeArray[] = { static_cast<size_t>(size) };

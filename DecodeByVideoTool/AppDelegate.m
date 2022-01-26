@@ -6,6 +6,7 @@
 //
 
 #import "AppDelegate.h"
+#import "ViewController.h"
 
 @interface AppDelegate ()
 
@@ -15,17 +16,15 @@
 
 
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions {
-//    if (@available(iOS 13.0, *)) {
-//
-//        } else {
-//
-//            self.window = [[UIWindow alloc]initWithFrame:[UIScreen mainScreen].bounds];
-//            self.window.rootViewController = [[UITabBarController alloc]init];
-//            self.window.backgroundColor = [UIColor whiteColor];
-//            [self.window makeKeyAndVisible];
-//
-//        }
-        return YES;
+    self.window = [[UIWindow alloc] initWithFrame:[[UIScreen mainScreen] bounds]];
+
+    UINavigationController *navigationController = [[UINavigationController alloc] initWithRootViewController:[[ViewController alloc] init]];
+
+    self.viewController = navigationController;
+    self.window.rootViewController = self.viewController;
+
+    [self.window makeKeyAndVisible];
+    return YES;
 }
 
 

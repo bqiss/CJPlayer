@@ -5,18 +5,19 @@
 //  Created by 陈剑 on 2022/1/20.
 //
 
-#import "TypeRTMPUrlViewController.h"
+#import "InputRTMPUrlViewController.h"
+#import "DisplayViewController.h"
 
-@interface TypeRTMPUrlViewController ()
+@interface InputRTMPUrlViewController ()
 @property (nonatomic, strong) UITextView *textView;
 
 @end
 
-@implementation TypeRTMPUrlViewController
+@implementation InputRTMPUrlViewController
 
 - (void)viewDidLoad {
     [super viewDidLoad];
-    self.title = @"1";
+    self.title = @"InputRTMPUrl";
     self.textView = [[UITextView alloc]initWithFrame:CGRectMake(0, 0, [UIScreen mainScreen].bounds.size.width, [UIScreen mainScreen].bounds.size.height)];
     [self.view addSubview:self.textView];
     self.view.backgroundColor = [UIColor whiteColor];
@@ -29,12 +30,25 @@
     UIBarButtonItem *leftItem1 = [[UIBarButtonItem alloc]initWithBarButtonSystemItem:UIBarButtonSystemItemCancel target:self action:@selector(backAction)];//设置一个系统Item
     self.navigationItem.leftBarButtonItem = leftItem1;//添加到导航项的左按钮
 
+    UIBarButtonItem *rightItem = [[UIBarButtonItem alloc]initWithBarButtonSystemItem:UIBarButtonSystemItemDone target:self action:@selector(doneAction)];//设置一个系统Item
+    self.navigationItem.rightBarButtonItem = rightItem;
+
+
 
 
 }
 
 - (void)backAction {
     [self dismissViewControllerAnimated:YES completion:^{
+
+    }];
+}
+
+- (void)doneAction {
+
+    DisplayViewController *vc = [[DisplayViewController alloc]initWithUrl:[NSURL URLWithString:self.textView.text]];
+    UINavigationController *navagationController = [[UINavigationController alloc]initWithRootViewController:vc];
+    [self presentViewController:navagationController animated:YES completion:^{
 
     }];
 }

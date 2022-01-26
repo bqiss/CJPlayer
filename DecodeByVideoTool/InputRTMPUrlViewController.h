@@ -9,7 +9,7 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface TypeRTMPUrlViewController : UIViewController
+@interface InputRTMPUrlViewController : UIViewController
 
 @end
 

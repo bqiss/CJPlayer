@@ -25,7 +25,6 @@
 		9C93E32D279585A400B569B1 /* libswresample.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 9C93E327279585A400B569B1 /* libswresample.a */; };
 		9C93E32E279585A400B569B1 /* libswscale.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 9C93E328279585A400B569B1 /* libswscale.a */; };
 		9C98C60B2779DD27008A22BF /* AppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 9C98C60A2779DD27008A22BF /* AppDelegate.m */; };
-		9C98C60E2779DD27008A22BF /* SceneDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 9C98C60D2779DD27008A22BF /* SceneDelegate.m */; };
 		9C98C6142779DD27008A22BF /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 9C98C6122779DD27008A22BF /* Main.storyboard */; };
 		9C98C6162779DD28008A22BF /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 9C98C6152779DD28008A22BF /* Assets.xcassets */; };
 		9C98C6192779DD28008A22BF /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 9C98C6172779DD28008A22BF /* LaunchScreen.storyboard */; };
@@ -47,7 +46,8 @@
 		9C99CCFA278FB61F00F0513A /* ViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 9C99CCF9278FB61F00F0513A /* ViewController.m */; };
 		9C99CCFD279121D000F0513A /* CJAVPlayer.m in Sources */ = {isa = PBXBuildFile; fileRef = 9C99CCFC279121D000F0513A /* CJAVPlayer.m */; };
 		9C9F5D8D279938400004A97D /* SelectLocalVideoViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 9C9F5D8C279938400004A97D /* SelectLocalVideoViewController.m */; };
-		9C9F5D9127993F320004A97D /* TypeRTMPUrlViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 9C9F5D9027993F320004A97D /* TypeRTMPUrlViewController.m */; };
+		9C9F5D9127993F320004A97D /* InputRTMPUrlViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 9C9F5D9027993F320004A97D /* InputRTMPUrlViewController.m */; };
+		9CA9B56927A12BF1009185B0 /* SceneDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 9CA9B56827A12BF1009185B0 /* SceneDelegate.m */; };
 		9CAB1416278D1D93001BBDFA /* CJDecoderManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 9CAB1415278D1D93001BBDFA /* CJDecoderManager.m */; };
 /* End PBXBuildFile section */
 
@@ -354,8 +354,6 @@
 		9C98C6062779DD27008A22BF /* DecodeByVideoTool.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = DecodeByVideoTool.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		9C98C6092779DD27008A22BF /* AppDelegate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = AppDelegate.h; sourceTree = "<group>"; };
 		9C98C60A2779DD27008A22BF /* AppDelegate.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = AppDelegate.m; sourceTree = "<group>"; };
-		9C98C60C2779DD27008A22BF /* SceneDelegate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = SceneDelegate.h; sourceTree = "<group>"; };
-		9C98C60D2779DD27008A22BF /* SceneDelegate.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = SceneDelegate.m; sourceTree = "<group>"; };
 		9C98C6132779DD27008A22BF /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
 		9C98C6152779DD28008A22BF /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		9C98C6182779DD28008A22BF /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
@@ -387,8 +385,10 @@
 		9C99CCFC279121D000F0513A /* CJAVPlayer.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = CJAVPlayer.m; sourceTree = "<group>"; };
 		9C9F5D8B279938400004A97D /* SelectLocalVideoViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = SelectLocalVideoViewController.h; sourceTree = "<group>"; };
 		9C9F5D8C279938400004A97D /* SelectLocalVideoViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = SelectLocalVideoViewController.m; sourceTree = "<group>"; };
-		9C9F5D8F27993F320004A97D /* TypeRTMPUrlViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = TypeRTMPUrlViewController.h; sourceTree = "<group>"; };
-		9C9F5D9027993F320004A97D /* TypeRTMPUrlViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = TypeRTMPUrlViewController.m; sourceTree = "<group>"; };
+		9C9F5D8F27993F320004A97D /* InputRTMPUrlViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = InputRTMPUrlViewController.h; sourceTree = "<group>"; };
+		9C9F5D9027993F320004A97D /* InputRTMPUrlViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = InputRTMPUrlViewController.m; sourceTree = "<group>"; };
+		9CA9B56827A12BF1009185B0 /* SceneDelegate.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SceneDelegate.m; sourceTree = "<group>"; };
+		9CA9B56A27A12C17009185B0 /* SceneDelegate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = SceneDelegate.h; sourceTree = "<group>"; };
 		9CAB1415278D1D93001BBDFA /* CJDecoderManager.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = CJDecoderManager.m; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -908,12 +908,12 @@
 				9C837CBC2787EE0C003FF2F8 /* CJAVPlayer */,
 				9C98C6092779DD27008A22BF /* AppDelegate.h */,
 				9C98C60A2779DD27008A22BF /* AppDelegate.m */,
-				9C98C60C2779DD27008A22BF /* SceneDelegate.h */,
-				9C98C60D2779DD27008A22BF /* SceneDelegate.m */,
+				9CA9B56A27A12C17009185B0 /* SceneDelegate.h */,
+				9CA9B56827A12BF1009185B0 /* SceneDelegate.m */,
 				9C98C6522779DD56008A22BF /* DisplayViewController.h */,
 				9C98C6512779DD55008A22BF /* DisplayViewController.m */,
-				9C9F5D8F27993F320004A97D /* TypeRTMPUrlViewController.h */,
-				9C9F5D9027993F320004A97D /* TypeRTMPUrlViewController.m */,
+				9C9F5D8F27993F320004A97D /* InputRTMPUrlViewController.h */,
+				9C9F5D9027993F320004A97D /* InputRTMPUrlViewController.m */,
 				9C9F5D8B279938400004A97D /* SelectLocalVideoViewController.h */,
 				9C9F5D8C279938400004A97D /* SelectLocalVideoViewController.m */,
 				9C99CCF8278FB61F00F0513A /* ViewController.h */,
@@ -1102,6 +1102,7 @@
 				9C9124552796A882008BBA5D /* PacketQueue.mm in Sources */,
 				9C99CCFA278FB61F00F0513A /* ViewController.m in Sources */,
 				9C98C64F2779DD47008A22BF /* VideoToolBoxDecoder.mm in Sources */,
+				9CA9B56927A12BF1009185B0 /* SceneDelegate.m in Sources */,
 				9C8E1BBB27842910009C9C6B /* SampleBufferConverter.m in Sources */,
 				9C99CCFD279121D000F0513A /* CJAVPlayer.m in Sources */,
 				9C98C64A2779DD47008A22BF /* FFmpegParseHandler.mm in Sources */,
@@ -1112,9 +1113,8 @@
 				9C98C60B2779DD27008A22BF /* AppDelegate.m in Sources */,
 				9C8E1BB8278421B8009C9C6B /* AudioToolBoxDecoder.m in Sources */,
 				9C9F5D8D279938400004A97D /* SelectLocalVideoViewController.m in Sources */,
-				9C9F5D9127993F320004A97D /* TypeRTMPUrlViewController.m in Sources */,
+				9C9F5D9127993F320004A97D /* InputRTMPUrlViewController.m in Sources */,
 				9C98C61C2779DD28008A22BF /* main.m in Sources */,
-				9C98C60E2779DD27008A22BF /* SceneDelegate.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

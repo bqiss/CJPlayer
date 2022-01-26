@@ -25,9 +25,9 @@
 @implementation CJDecoderManager
 
 #pragma mark init
-- (instancetype)initWithFilePath: (NSString *)path fileType:(fileType) fileType videoState:(VideoState *)videoState {
+- (instancetype)initWithFilePath: (NSString *)path videoState:(VideoState *)videoState {
     if (self = [super init]) {
-        self.parseHandler = [[FFmpegParseHandler alloc]initWithPath:path fileType:fileType videoState:videoState];
+        self.parseHandler = [[FFmpegParseHandler alloc]initWithPath:path videoState:videoState];
         avFormatContext = [self.parseHandler getFormatContext];
 //        self.videoDuration = avFormatContext -> duration;
 
