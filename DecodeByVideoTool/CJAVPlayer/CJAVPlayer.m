@@ -197,15 +197,15 @@ static int rendererSerial = 0;
 
 //    if (isSeeking && sampleBuffer -> serial == rendererSerial ) {
 //        isSeeking = NO;
-//        [self.rendererSynchronizer setRate:self.rate time:CMTimeMake(videoState -> seekTimeStamp * AV_TIME_BASE, AV_TIME_BASE)];
-//        NSLog(@"timebase is reset: %f",CMTimeGetSeconds(CMTimeMake(videoState -> seekTimeStamp * AV_TIME_BASE, AV_TIME_BASE)));
+////        [self.rendererSynchronizer setRate:self.rate time:CMTimeMake(videoState -> seekTimeStamp * AV_TIME_BASE, AV_TIME_BASE)];
+//        //NSLog(@"timebase is reset: %f",CMTimeGetSeconds(CMTimeMake(videoState -> seekTimeStamp * AV_TIME_BASE, AV_TIME_BASE)));
 //    }
 
-    // if the buffer serial is not equal renderSerial, throw it
-//    if (isSeeking || sampleBuffer -> serial != rendererSerial) {
-//        NSLog(@"buffer != rendererSerial!");
-//        return;
-//    }
+     //if the buffer serial is not equal renderSerial, throw it
+    if (sampleBuffer -> serial != rendererSerial) {
+        NSLog(@"buffer != rendererSerial!");
+        return;
+    }
 
     //if the buffer pts is samller than the rendererSynchronizer timebase, throw it
     if (CMTimeGetSeconds(CMSampleBufferGetPresentationTimeStamp(sampleBuffer -> sampleBuffer)) < videoState -> seekTimeStamp) {
@@ -220,16 +220,16 @@ static int rendererSerial = 0;
 
     [self.playLayer enqueueSampleBuffer:sampleBuffer -> sampleBuffer];
 
-//    NSLog(@"videoEnqueue:%f，timebase:%f",CMTimeGetSeconds(CMSampleBufferGetPresentationTimeStamp(sampleBuffer -> sampleBuffer)),CMTimeGetSeconds(CMTimebaseGetTime(self.rendererSynchronizer.timebase)));
+    NSLog(@"videoEnqueue:%f，timebase:%f",CMTimeGetSeconds(CMSampleBufferGetPresentationTimeStamp(sampleBuffer -> sampleBuffer)),CMTimeGetSeconds(CMTimebaseGetTime(self.rendererSynchronizer.timebase)));
 }
 
 - (void)CJDecoderGetAudioSampleBufferCallback:(MySampleBuffer *)sampleBuffer isFirstFrame:(BOOL)isFirstFrame {
 
 
-//    if (sampleBuffer -> serial != rendererSerial) {
-//        NSLog(@"buffer != rendererSerial!");
-//        return;
-//    }
+    if (sampleBuffer -> serial != rendererSerial) {
+        NSLog(@"buffer != rendererSerial!");
+        return;
+    }
 
     [self.audioRenderer enqueueSampleBuffer:sampleBuffer -> sampleBuffer];
 //    NSLog(@"audioEnqueue:%f，timebase:%f",CMTimeGetSeconds(CMSampleBufferGetPresentationTimeStamp(sampleBuffer -> sampleBuffer)),CMTimeGetSeconds(CMTimebaseGetTime(self.rendererSynchronizer.timebase)));
