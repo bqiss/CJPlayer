@@ -15,7 +15,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @property (nonatomic, assign) int palyerRate;
 
-- (instancetype)initWithURL:(NSURL *)url layerFrame:(CGRect)frame fileType: (fileType)fileType;
+- (instancetype)initWithURL:(NSURL *)url layerFrame:(CGRect)frame;
 
 - (void)play;
 
