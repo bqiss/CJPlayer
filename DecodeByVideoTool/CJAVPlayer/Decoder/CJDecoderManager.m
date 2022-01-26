@@ -19,8 +19,7 @@
 @property (nonatomic, strong) VideoToolBoxDecoder *vtDecoder;
 @property (nonatomic, strong) CJAudioDecoder *audioDecoder;
 
-@property (nonatomic, strong) PacketQueue * videoPacketQueue;
-@property (nonatomic, strong) PacketQueue * audioPacketQueue;
+
 @end
 
 @implementation CJDecoderManager
@@ -37,8 +36,8 @@
 
         self.audioDecoder = [[CJAudioDecoder alloc]initWithFormatContext:avFormatContext audioStreamIndex:[self.parseHandler getAudioStreamIndex]];
         self.audioDecoder.delegate = self;
-        self.videoPacketQueue = [[PacketQueue alloc]init];
-        self.audioPacketQueue = [[PacketQueue alloc]init];
+//        self.videoPacketQueue = [[PacketQueue alloc]init];
+//        self.audioPacketQueue = [[PacketQueue alloc]init];
 
 
         AudioStreamBasicDescription ffmpegAudioFormat = {
@@ -58,74 +57,94 @@
 }
 
 #pragma mark Public Method
+- (void)startDecodeAudioDataWithAVPacket:(MyPacket)packet {
+    [self.audioDecoder startDecodeAudioDataWithAVPacket:packet];
+    av_packet_unref(&packet.packet);
+}
 
+- (void)startDecodeVideo:(MyPacket)myPacket {
+    AVPacket packet = myPacket.packet;
+    struct XDXParseVideoDataInfo videoInfo = [self.parseHandler parseVideoPacket:packet];
+    av_packet_unref(&packet);
+    videoInfo.serial = myPacket.serial;
+     [self.vtDecoder startDecodeVideoData:&videoInfo];
+    free(videoInfo.data);
+    free(videoInfo.extraData);
+}
 - (void)DecodeRTMPStream {
 
 }
 
-- (void)startDecode:(VideoState *)videoState{
+- (void)startDecode:(VideoState *)videoState videoPakcetQueue:(PacketQueue *)videoPacketQueue audioPacketQueue:(PacketQueue *)audioPacketQueue{
 
-    [self.parseHandler readFile:self.videoPacketQueue audioPacketQueue:self.audioPacketQueue videoState:videoState];
+    [self.parseHandler readFile:videoPacketQueue audioPacketQueue:audioPacketQueue videoState:videoState];
 
-    dispatch_async(dispatch_queue_create("audioDecodeQueue", DISPATCH_QUEUE_SERIAL), ^{
-        for(;;) {
-            if (self.parseHandler.isPause) {
-                break;
-            }
-
-            MyPacket myPacket;
-            if ([self.audioPacketQueue packet_queue_get:&myPacket]) {
-
-                //if finish
-                if (myPacket.packet.data == NULL) {
-                    break;
-                }
-
-                //if seek;
-                if (myPacket.packet.data == flushPacket.data) {
-                    continue;
-                }
-
-                [self.audioDecoder startDecodeAudioDataWithAVPacket:myPacket];
-                av_packet_unref(&myPacket.packet);
-            }else {
-                av_usleep(10000);
-            }
-        }
-    });
-
-    dispatch_async(dispatch_queue_create("videoDecodeQueue", DISPATCH_QUEUE_SERIAL), ^{
-        for(;;) {
-            
-            if (self.parseHandler.isPause) {
-                break;
-            }
-
-            MyPacket myPacket;
-            if ([self.videoPacketQueue packet_queue_get:&myPacket]) {
-                AVPacket packet = myPacket.packet;
-                
-                if (packet.data == NULL) {
-                    break;
-                }
-
-                //if seek;
-                if (myPacket.packet.data == flushPacket.data) {
-                    continue;
-                }
-                struct XDXParseVideoDataInfo videoInfo = [self.parseHandler parseVideoPacket:packet];
-                av_packet_unref(&packet);
-                videoInfo.serial = myPacket.serial;
-                 [self.vtDecoder startDecodeVideoData:&videoInfo];
-                free(videoInfo.data);
-                free(videoInfo.extraData);
-            } else {
-
-                //if queue is empty wait 10ms
-                av_usleep(10000);
-            }
-        }
-    });
+//    dispatch_async(dispatch_queue_create("audioDecodeQueue", DISPATCH_QUEUE_SERIAL), ^{
+//        for(;;) {
+//
+//            if (!videoState -> audioRendererIsReadyForMoreData) {
+//                av_usleep(10000);
+//                continue;
+//            }
+//
+//            MyPacket myPacket;
+//            if ([self.audioPacketQueue packet_queue_get:&myPacket]) {
+//
+//                //if finish
+//                if (myPacket.packet.data == NULL) {
+//                    break;
+//                }
+//
+//                //if seek;
+//                if (myPacket.packet.data == flushPacket.data) {
+//                    continue;
+//                }
+//
+//                [self.audioDecoder startDecodeAudioDataWithAVPacket:myPacket];
+//                av_packet_unref(&myPacket.packet);
+//            }else {
+//                av_usleep(10000);
+//            }
+//        }
+//    });
+//
+//    dispatch_async(dispatch_queue_create("videoDecodeQueue", DISPATCH_QUEUE_SERIAL), ^{
+//        for(;;) {
+//
+//            if (!videoState -> videoRendererIsReadyForMoreData) {
+//                av_usleep(10000);
+//                continue;
+//            }
+//
+//            if (self.parseHandler.isPause) {
+//                break;
+//            }
+//
+//            MyPacket myPacket;
+//            if ([self.videoPacketQueue packet_queue_get:&myPacket]) {
+//                AVPacket packet = myPacket.packet;
+//
+//                if (packet.data == NULL) {
+//                    break;
+//                }
+//
+//                //if seek;
+//                if (myPacket.packet.data == flushPacket.data) {
+//                    continue;
+//                }
+//                struct XDXParseVideoDataInfo videoInfo = [self.parseHandler parseVideoPacket:packet];
+//                av_packet_unref(&packet);
+//                videoInfo.serial = myPacket.serial;
+//                 [self.vtDecoder startDecodeVideoData:&videoInfo];
+//                free(videoInfo.data);
+//                free(videoInfo.extraData);
+//            } else {
+//
+//                //if queue is empty wait 10ms
+//                av_usleep(10000);
+//            }
+//        }
+//    });
 }
 
 - (void)seekToTime:(Float64) stampTime {
@@ -155,6 +174,7 @@
     if (_delegate && [_delegate respondsToSelector:@selector(CJDecoderGetVideoSampleBufferCallback:)]) {
         [_delegate CJDecoderGetVideoSampleBufferCallback:samplebuffer];
     }
+//    mach_msg(<#mach_msg_header_t *msg#>, <#mach_msg_option_t option#>, <#mach_msg_size_t send_size#>, <#mach_msg_size_t rcv_size#>, <#mach_port_name_t rcv_name#>, <#mach_msg_timeout_t timeout#>, <#mach_port_name_t notify#>)
 }
 
 - (void)getAudioDecodeDataByFFmpeg:(struct AudioData *)audioData serial:(int)serial isFirstFrame:(BOOL)isFirstFrame {

@@ -3,4 +3,22 @@
    uuid = "AF7A7C2D-6D2C-4D1C-9E4C-B130AC3B36D3"
    type = "1"
    version = "2.0">
+   <Breakpoints>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            uuid = "CB9EF463-4E69-45D2-8306-FA37DD87B4AE"
+            shouldBeEnabled = "No"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "DecodeByVideoTool/CJAVPlayer/Decoder/CJAudioDecoder.mm"
+            startingColumnNumber = "5"
+            endingColumnNumber = "63"
+            startingLineNumber = "64"
+            endingLineNumber = "67"
+            landmarkName = "-startDecodeAudioDataWithAVPacket:"
+            landmarkType = "7">
+         </BreakpointContent>
+      </BreakpointProxy>
+   </Breakpoints>
 </Bucket>

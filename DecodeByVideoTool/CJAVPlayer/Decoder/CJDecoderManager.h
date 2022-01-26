@@ -38,7 +38,7 @@ static const NSNotificationName  kDecodeIsFinishNotificationKey = @"CJDeocderMan
 - (void)startAudioDecoder;
 
 /* Start decoding whether keyframe or not (decode video and audio) */
-- (void)startDecode:(VideoState *)videoState;
+- (void)startDecode:(VideoState *)videoState videoPakcetQueue:(PacketQueue *)videoPacketQueue audioPacketQueue:(PacketQueue *)audioPacketQueue;
 
 /* Start decoding until next keyframe (decode video and audio) */
 - (void)startDecodeUntilNextKeyframe;
@@ -48,6 +48,9 @@ static const NSNotificationName  kDecodeIsFinishNotificationKey = @"CJDeocderMan
 
 - (void)pauseDecoder;
 - (void)startDecoder;
+
+- (void)startDecodeAudioDataWithAVPacket:(MyPacket)packet;
+- (void)startDecodeVideo:(MyPacket)packet;
 
 @end
 

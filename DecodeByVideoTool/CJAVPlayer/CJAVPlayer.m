@@ -14,11 +14,14 @@ static int rendererSerial = 0;
 {
     AVFormatContext * formatContext;
     dispatch_queue_t queue;
+    dispatch_queue_t videoGetBufferQueue;
+    dispatch_queue_t audioGetBufferQueue;
     BOOL isSeeking;
     BOOL isRunning;
     BOOL isDecoding;
     BOOL timeBaseIsReset;
     VideoState *videoState;
+    int64_t startTime;
 }
 
 
@@ -27,6 +30,10 @@ static int rendererSerial = 0;
 @property (nonatomic, strong) AVSampleBufferRenderSynchronizer * rendererSynchronizer;
 
 @property (nonatomic, strong) AVSampleBufferAudioRenderer * audioRenderer;
+@property (nonatomic, strong) PacketQueue * videoPacketQueue;
+@property (nonatomic, strong) PacketQueue * audioPacketQueue;
+
+@property (nonatomic, assign) int rate;
 
 @end
 
@@ -34,6 +41,8 @@ static int rendererSerial = 0;
 - (instancetype)initWithURL:(NSURL *)url layerFrame:(CGRect)frame fileType: (fileType)fileType {
     if (self = [super init]) {
         queue = dispatch_queue_create("playerQueue", DISPATCH_QUEUE_SERIAL);
+        videoGetBufferQueue = dispatch_queue_create("videoGetBufferQueue", DISPATCH_QUEUE_SERIAL);
+        audioGetBufferQueue = dispatch_queue_create("audioGetBufferQueue", DISPATCH_QUEUE_SERIAL);
         [self initLayerAndAudioRenderer:frame];
         [self preparePlayer:url fileType:fileType];
     }
@@ -48,6 +57,8 @@ static int rendererSerial = 0;
     self.playLayer.opaque = YES;
 
     self.audioRenderer = [[AVSampleBufferAudioRenderer alloc]init];
+    self.videoPacketQueue = [[PacketQueue alloc]init];
+    self.audioPacketQueue = [[PacketQueue alloc]init];
 }
 
 - (void)preparePlayer:(NSURL *)url fileType:(fileType) fileType {
@@ -60,41 +71,47 @@ static int rendererSerial = 0;
     self.rendererSynchronizer = [[AVSampleBufferRenderSynchronizer alloc]init];
     [self.rendererSynchronizer addRenderer:self.playLayer];
     [self.rendererSynchronizer addRenderer:self.audioRenderer];
-    [self.rendererSynchronizer setRate:1];
-
+    self.rate = 1;
 
 }
 
 #pragma  mark Public Method
 
 - (void)pause {
-    self.rendererSynchronizer.rate = 0;
+    self.rate = 0;
 }
 
 - (void)play {
     if (!isRunning) {
         [self restartPlayerAtStartTime:0];
-        [self.decoderManager startDecode:videoState];
-        self.rendererSynchronizer.rate = 1;
+        self.rate = 1;
         isRunning = YES;
+        [self.playLayer addObserver:self forKeyPath:@"status" options:NSKeyValueObservingOptionNew context:nil];
+        [self.audioRenderer addObserver:self forKeyPath:@"status" options:NSKeyValueObservingOptionNew context:nil];
+        [self.decoderManager startDecode:videoState videoPakcetQueue:self.videoPacketQueue audioPacketQueue:self.audioPacketQueue];
     }else {
-        float rate = self.rendererSynchronizer.rate;
-        if (rate != 0) {
+        if (self.rate != 0) {
             return;
         }
-        self.rendererSynchronizer.rate = 1;
+        self.rate = 1;
     }
 
 }
 
 - (void)seekToTime:(Float64)timeStamp {
-    rendererSerial++;
-    [self restartPlayerAtStartTime:timeStamp];
-    videoState -> isSeekReq = YES;
+    if (!isSeeking) {
+        self.rate = 0;
+        rendererSerial++;
+        [self restartPlayerAtStartTime:timeStamp];
+        videoState -> isSeekReq = YES;
+        videoState -> seekTimeStamp = timeStamp;
+        isSeeking = YES;
+    }
+
 }
 
 - (void)addPeriodicTimeObserverForInterval:(CMTime)time queue:(nonnull dispatch_queue_t)queue usingBlock:(void (^)(CMTime time))handler{
-    [self.rendererSynchronizer addPeriodicTimeObserverForInterval:time queue:queue usingBlock:handler];
+   // [self.rendererSynchronizer addPeriodicTimeObserverForInterval:time queue:queue usingBlock:handler];
 }
 
 #pragma mark Get Method
@@ -112,9 +129,52 @@ static int rendererSerial = 0;
 - (void)restartPlayerAtStartTime:(Float64)timeStamp {
     float rate = self.rendererSynchronizer.rate;
     [self stopEnqueue];
+    [self.audioRenderer requestMediaDataWhenReadyOnQueue:audioGetBufferQueue usingBlock:^{
+        while (self.audioRenderer.isReadyForMoreMediaData) {
+            MyPacket myPacket;
+            if ([self.audioPacketQueue packet_queue_get:&myPacket]) {
 
-    videoState -> seekTimeStamp = timeStamp;
-    isSeeking = YES;
+                //if finish
+                if (myPacket.packet.data == NULL) {
+                    break;
+                }
+
+                //if seek;
+                if (myPacket.packet.data == flushPacket.data) {
+                    continue;
+                }
+
+                [self.decoderManager startDecodeAudioDataWithAVPacket:myPacket];
+            }else {
+                av_usleep(10000);
+            }
+        }
+    }];
+
+    [self.playLayer requestMediaDataWhenReadyOnQueue:videoGetBufferQueue usingBlock:^{
+        while (self.playLayer.isReadyForMoreMediaData) {
+            MyPacket myPacket;
+            if ([self.videoPacketQueue packet_queue_get:&myPacket]) {
+                AVPacket packet = myPacket.packet;
+
+                if (packet.data == NULL) {
+                    break;
+                }
+
+                //if seek;
+                if (myPacket.packet.data == flushPacket.data) {
+                    continue;
+                }
+                [self.decoderManager startDecodeVideo:myPacket];
+            } else {
+
+                //if queue is empty wait 10ms
+                av_usleep(10000);
+            }
+        }
+    }];
+//    av_usleep(10000);
+    [self.rendererSynchronizer setRate:rate time:CMTimeMake(timeStamp * AV_TIME_BASE, AV_TIME_BASE)];
 }
 - (void)stopEnqueue {
 
@@ -125,43 +185,27 @@ static int rendererSerial = 0;
 
     [self.playLayer stopRequestingMediaData];
     [self.playLayer flush];
+
 }
 #pragma mark Enqueue SampleBuffer
 
 -(void)CJDecoderGetVideoSampleBufferCallback:(MySampleBuffer *)sampleBuffer {
-    //    if (sampleBuffer -> serial == rendererSerial) {
-    //        isSeeking = NO;
-    //    }
-    //
-    //    if (sampleBuffer -> serial != rendererSerial || isSeeking) {
-    //        NSLog(@"throwBuffer:%f",CMTimeGetSeconds(CMSampleBufferGetPresentationTimeStamp(sampleBuffer -> sampleBuffer)));
-    //        return;
-    //    }
-    //
-    //    if (CMTimeGetSeconds(CMTimebaseGetTime(self.rendererSynchronizer.timebase)) > CMTimeGetSeconds(CMSampleBufferGetPresentationTimeStamp(sampleBuffer -> sampleBuffer))) {
-    //        NSLog(@"throwBuffer synchronizer:%f",CMTimeGetSeconds(CMSampleBufferGetPresentationTimeStamp(sampleBuffer -> sampleBuffer)));
-    //        return;
-    //    }
 
-//    Float64 pts = CMTimeGetSeconds(CMSampleBufferGetPresentationTimeStamp(sampleBuffer -> sampleBuffer));
-//    Float64 timebase = CMTimeGetSeconds(CMTimebaseGetTime(self.rendererSynchronizer.timebase));
-//    if (pts < timebase && timebase - pts > 3) {
-//        [self pause];
-//    } else {
-//        self.rendererSynchronizer.rate = 1;
+
+    printf("decode time:%lld \n",av_gettime() / 1000 - startTime);
+    startTime = av_gettime() / 1000;
+
+//    if (isSeeking && sampleBuffer -> serial == rendererSerial ) {
+//        isSeeking = NO;
+//        [self.rendererSynchronizer setRate:self.rate time:CMTimeMake(videoState -> seekTimeStamp * AV_TIME_BASE, AV_TIME_BASE)];
+//        NSLog(@"timebase is reset: %f",CMTimeGetSeconds(CMTimeMake(videoState -> seekTimeStamp * AV_TIME_BASE, AV_TIME_BASE)));
 //    }
 
-    if (isSeeking && sampleBuffer -> serial == rendererSerial ) {
-        isSeeking = NO;
-        [self.rendererSynchronizer setRate:1 time:CMTimeMake(videoState -> seekTimeStamp * AV_TIME_BASE, AV_TIME_BASE)];
-        NSLog(@"timebase is reset: %f",CMTimeGetSeconds(CMTimeMake(videoState -> seekTimeStamp * AV_TIME_BASE, AV_TIME_BASE)));
-    }
-
     // if the buffer serial is not equal renderSerial, throw it
-    if (isSeeking || sampleBuffer -> serial != rendererSerial) {
-        NSLog(@"buffer != rendererSerial!");
-        return;
-    }
+//    if (isSeeking || sampleBuffer -> serial != rendererSerial) {
+//        NSLog(@"buffer != rendererSerial!");
+//        return;
+//    }
 
     //if the buffer pts is samller than the rendererSynchronizer timebase, throw it
     if (CMTimeGetSeconds(CMSampleBufferGetPresentationTimeStamp(sampleBuffer -> sampleBuffer)) < videoState -> seekTimeStamp) {
@@ -169,21 +213,43 @@ static int rendererSerial = 0;
         return;
     }
 
+    if (isSeeking) {
+        isSeeking = NO;
+    }
+
+
     [self.playLayer enqueueSampleBuffer:sampleBuffer -> sampleBuffer];
 
-    NSLog(@"videoEnqueue:%f，timebase:%f",CMTimeGetSeconds(CMSampleBufferGetPresentationTimeStamp(sampleBuffer -> sampleBuffer)),CMTimeGetSeconds(CMTimebaseGetTime(self.rendererSynchronizer.timebase)));
+//    NSLog(@"videoEnqueue:%f，timebase:%f",CMTimeGetSeconds(CMSampleBufferGetPresentationTimeStamp(sampleBuffer -> sampleBuffer)),CMTimeGetSeconds(CMTimebaseGetTime(self.rendererSynchronizer.timebase)));
 }
 
 - (void)CJDecoderGetAudioSampleBufferCallback:(MySampleBuffer *)sampleBuffer isFirstFrame:(BOOL)isFirstFrame {
 
-    if (sampleBuffer -> serial != rendererSerial) {
-        NSLog(@"buffer != rendererSerial!");
-        return;
-    }
+
+//    if (sampleBuffer -> serial != rendererSerial) {
+//        NSLog(@"buffer != rendererSerial!");
+//        return;
+//    }
 
     [self.audioRenderer enqueueSampleBuffer:sampleBuffer -> sampleBuffer];
-    NSLog(@"audioEnqueue:%f，timebase:%f",CMTimeGetSeconds(CMSampleBufferGetPresentationTimeStamp(sampleBuffer -> sampleBuffer)),CMTimeGetSeconds(CMTimebaseGetTime(self.rendererSynchronizer.timebase)));
+//    NSLog(@"audioEnqueue:%f，timebase:%f",CMTimeGetSeconds(CMSampleBufferGetPresentationTimeStamp(sampleBuffer -> sampleBuffer)),CMTimeGetSeconds(CMTimebaseGetTime(self.rendererSynchronizer.timebase)));
 }
 
+- (void)observeValueForKeyPath:(NSString *)keyPath ofObject:(id)object change:(NSDictionary<NSKeyValueChangeKey,id> *)change context:(void *)context {
+
+    if ([keyPath  isEqual: @"status"]) {
+        if (self.playLayer.status == AVQueuedSampleBufferRenderingStatusFailed) {
+            self.rendererSynchronizer.rate = 0;
+            [self.playLayer flush];
+//            [self restartPlayerAtStartTime:CMTimeGetSeconds(self.rendererSynchronizer.currentTime)];
+        }
+    }
+
+    
+}
+
+- (void)setRate:(int)rate {
+    self.rendererSynchronizer.rate = rate;
+}
 
 @end

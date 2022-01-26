@@ -16,6 +16,7 @@ typedef struct MySampleBuffer {
     int serial;
     BOOL isLastPacket;
     BOOL isFirstFrame;
+    int64_t startTime;
 }MySampleBuffer;
 
 
@@ -33,6 +34,8 @@ typedef struct VideoState {
     BOOL isSeekReq;
     BOOL isPause;
     BOOL networkERROR;
+    BOOL videoRendererIsReadyForMoreData;
+    BOOL audioRendererIsReadyForMoreData;
     Float64 seekTimeStamp;
 }VideoState;
 

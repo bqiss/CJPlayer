@@ -76,10 +76,23 @@ static void VideoDecoderCallback(void *decompressionOutputRefCon, void *sourceFr
         .presentationTimeStamp  = presentationTimeStamp,
         .duration        = presentationDuration
     };
+    if (!pixelBuffer) {
+        return;
+    }
 
-    CMSampleBufferRef samplebuffer = [decoder createSampleBufferFromPixelbuffer:pixelBuffer
-                                                                    videoRotate:sourceRef->rotate
-                                                                     timingInfo:sampleTime];
+    CMSampleBufferRef samplebuffer = NULL;
+    CMVideoFormatDescriptionRef videoInfo = NULL;
+    status = CMVideoFormatDescriptionCreateForImageBuffer(kCFAllocatorDefault, pixelBuffer, &videoInfo);
+    status = CMSampleBufferCreateForImageBuffer(kCFAllocatorDefault, pixelBuffer, true, NULL, NULL, videoInfo, &sampleTime, &samplebuffer);
+
+    if (videoInfo != NULL) {
+        CFRelease(videoInfo);
+    }
+
+    if (samplebuffer == NULL || status != noErr) {
+        return;
+    }
+
     CMSampleBufferSetOutputPresentationTimeStamp(samplebuffer, presentationTimeStamp);
 
     if (samplebuffer) {
@@ -569,27 +582,7 @@ static void CFDictionarySetBoolean(CFMutableDictionaryRef dictionary, CFStringRe
 }
 
 #pragma mark - Other
-- (CMSampleBufferRef)createSampleBufferFromPixelbuffer:(CVImageBufferRef)pixelBuffer videoRotate:(int)videoRotate timingInfo:(CMSampleTimingInfo)timingInfo {
-    if (!pixelBuffer) {
-        return NULL;
-    }
 
-    CVPixelBufferRef final_pixelbuffer = pixelBuffer;
-    CMSampleBufferRef samplebuffer = NULL;
-    CMVideoFormatDescriptionRef videoInfo = NULL;
-    OSStatus status = CMVideoFormatDescriptionCreateForImageBuffer(kCFAllocatorDefault, final_pixelbuffer, &videoInfo);
-    status = CMSampleBufferCreateForImageBuffer(kCFAllocatorDefault, final_pixelbuffer, true, NULL, NULL, videoInfo, &timingInfo, &samplebuffer);
-
-    if (videoInfo != NULL) {
-        CFRelease(videoInfo);
-    }
-
-    if (samplebuffer == NULL || status != noErr) {
-        return NULL;
-    }
-
-    return samplebuffer;
-}
 
 - (void)resetIsFirstFrame {
     _isFirstFrame = YES;

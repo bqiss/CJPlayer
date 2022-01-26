@@ -139,16 +139,16 @@
 
     [pan setTranslation:CGPointZero inView:self.view];
 
+    float process = 1 - (-processFrame.origin.x / (self.view.frame.size.width - 40));
+
+    seekTime = [self.player getDuration] * process;
+    NSLog(@"-----seekStart-----:%f",seekTime);
+
+    [self.player seekToTime:seekTime];
     if (pan.state == UIGestureRecognizerStateEnded) {
 
 
 
-        float process = 1 - (-processFrame.origin.x / (self.view.frame.size.width - 40));
-
-        seekTime = [self.player getDuration] * process;
-        NSLog(@"-----seekStart-----:%f",seekTime);
-
-        [self.player seekToTime:seekTime];
         seekRequest = NO;
 
     }

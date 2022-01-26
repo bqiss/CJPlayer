@@ -414,11 +414,7 @@ static int GetAVStreamFPSTimeBase(AVStream *st) {
 
         for (;;) {
             int ret;
-
-            if (videoState -> isPause) {
-                break;
-            }
-
+            
             if (videoState -> isSeekReq) {
                 ret = av_seek_frame(self->m_formatContext, -1, videoState -> seekTimeStamp * AV_TIME_BASE, AVSEEK_FLAG_BACKWARD);
                 if (ret < 0) {
