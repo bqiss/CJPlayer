@@ -72,17 +72,16 @@
     [self.parseHandler readFile:videoPacketQueue audioPacketQueue:audioPacketQueue videoState:videoState];
 }
 
-- (void)seekToTime:(Float64) stampTime {
-    [self.parseHandler upDateAvContextFormatFromSeekTimeStamp:stampTime];
-    [self.parseHandler seekRequest];
-}
 
 - (AVFormatContext *)getFormatContext {
     return [self.parseHandler getFormatContext];
 }
 
-- (void)stopParsehandler {
-    [self.parseHandler stopParse];
+- (void)destroyDecoderManager {
+    _delegate = nil;
+    [self.vtDecoder stopDecoder];
+    [self.audioDecoder stopDecoder];
+    [self.parseHandler destroyParseHandler];
 }
 #pragma mark private method
 #pragma mark delegate method
@@ -90,6 +89,7 @@
     if (_delegate && [_delegate respondsToSelector:@selector(CJDecoderGetVideoSampleBufferCallback:)]) {
         [_delegate CJDecoderGetVideoSampleBufferCallback:samplebuffer];
     }
+//    CFRelease(samplebuffer -> sampleBuffer);
 //    mach_msg(<#mach_msg_header_t *msg#>, <#mach_msg_option_t option#>, <#mach_msg_size_t send_size#>, <#mach_msg_size_t rcv_size#>, <#mach_port_name_t rcv_name#>, <#mach_msg_timeout_t timeout#>, <#mach_port_name_t notify#>)
 }
 
@@ -140,7 +140,7 @@
         CFRelease(blockBuffer);
     }
 
-    free(tmp);
+    av_free(tmp);
     tmp = NULL;
     return sampleBuffer;
 }

@@ -42,6 +42,7 @@ typedef struct MyPacket {
 - (int) packet_queue_put_nullpacket:(int)streamIndex;
 - (void) packet_queue_flush;
 - (int) packet_queue_get:(MyPacket *)pkt;
+- (void) packet_queue_destroy;
 @end
 
 NS_ASSUME_NONNULL_END

@@ -47,6 +47,10 @@ static int serial = 0;
     dispatch_queue_t parseQueue;
     bool seekReqest;
     Float64 seekTime;
+
+    pthread_mutex_t mutex;
+    PacketQueue *videoQueue;
+    PacketQueue *audioQueue;
 }
 
 @end
@@ -84,24 +88,23 @@ static int GetAVStreamFPSTimeBase(AVStream *st) {
 - (instancetype)initWithPath:(NSString *)path videoState:(VideoState *)videoState {
     if (self = [super init]) {
         parseQueue = dispatch_queue_create("parse_queue", DISPATCH_QUEUE_SERIAL);
+        pthread_mutex_init(&mutex, NULL);
         [self prepareParseWithPath:path];
     }
     return self;
 }
 
 #pragma mark - public methods
-- (void)startParseWithCompletionHandler:(void (^)(BOOL isVideoFrame, BOOL isFinish, struct XDXParseVideoDataInfo *videoInfo, MyPacket packet))handler {
-    
-}
-
-- (void)stopParse {
+- (void)destroyParseHandler {
+    pthread_mutex_lock(&mutex);
     m_isStopParse = YES;
+    [self freeAllResources];
+    if (audioQueue) {
+        [audioQueue packet_queue_destroy];
+        [videoQueue packet_queue_destroy];
+    }
+    pthread_mutex_unlock(&mutex);
 }
-
-- (void)seekRequest {
-    seekReqest = YES;
-}
-
 #pragma mark Get Method
 - (AVFormatContext *)getFormatContext {
     return m_formatContext;
@@ -193,6 +196,8 @@ static int GetAVStreamFPSTimeBase(AVStream *st) {
         // There is total different meaning for 'timeout' option in rtmp
         avformat_network_init();
         av_dict_set(&opts, "timeout", NULL, 0);
+
+
     }else {
         av_dict_set(&opts, "timeout", "1000000", 0);//设置超时1秒
     }
@@ -328,12 +333,21 @@ static int GetAVStreamFPSTimeBase(AVStream *st) {
 #pragma mark Start Parse
 - (void)readFile:(PacketQueue *)videoPacketQueue audioPacketQueue:(PacketQueue *)audioPacketQueue videoState:(VideoState *)videoState {
 
+    videoQueue = videoPacketQueue;
+    audioQueue = audioPacketQueue;
+    m_formatContext -> interrupt_callback.callback = custom_interrupt_callback;
+    m_formatContext -> interrupt_callback.opaque = videoState;
+
     __block BOOL isNeedThrowPacket;
+    pthread_mutex_lock(&mutex);
     dispatch_async(parseQueue, ^{
         AVPacket    packet;
-
         for (;;) {
             int ret;
+
+            if (self -> m_isStopParse) {
+                break;
+            }
             
             if (videoState -> isSeekReq) {
                 ret = av_seek_frame(self->m_formatContext, -1, videoState -> seekTimeStamp * AV_TIME_BASE, AVSEEK_FLAG_BACKWARD);
@@ -378,6 +392,7 @@ static int GetAVStreamFPSTimeBase(AVStream *st) {
                 MyPacket myPacket = {0};
                 if (isNeedThrowPacket && packet.flags == 0x0010){
                     NSLog(@"throw video pkt: pkt.pts < seekTimeStamp!");
+                    av_packet_unref(&packet);
                     continue;;
                 }else if (packet.pts * av_q2d(self -> m_formatContext->streams[self -> m_videoStreamIndex]->time_base) > videoState -> seekTimeStamp){
                     isNeedThrowPacket = NO;
@@ -390,6 +405,7 @@ static int GetAVStreamFPSTimeBase(AVStream *st) {
             if (packet.stream_index == self->m_audioStreamIndex) {
                 MyPacket myPacket = {0};
                 if (isNeedThrowPacket && packet.pts * av_q2d(self -> m_formatContext->streams[self -> m_audioStreamIndex]->time_base) < videoState -> seekTimeStamp) {
+                    av_packet_unref(&packet);
                     NSLog(@"throw audio pkt: pkt.pts < seekTimeStamp!");
                     continue;
                 }
@@ -399,10 +415,16 @@ static int GetAVStreamFPSTimeBase(AVStream *st) {
             }
         }
     });
+    pthread_mutex_unlock(&mutex);
 }
 
 - (struct XDXParseVideoDataInfo)parseVideoPacket: (AVPacket)packet{
     XDXParseVideoDataInfo videoInfo = {0};
+
+    if (packet.data == flushPacket.data) {
+        videoInfo.data = flushPacket.data;
+        return videoInfo;
+    }
     int fps = GetAVStreamFPSTimeBase(m_formatContext->streams[m_videoStreamIndex]);
 
     // get the rotation angle of video
@@ -495,17 +517,18 @@ static int GetAVStreamFPSTimeBase(AVStream *st) {
 }
 
 
+
 - (void)freeAllResources {
     //log4cplus_error(kModuleName, "%s: Free all resources !",__func__);
-//    if (m_formatContext) {
-//        avformat_close_input(&m_formatContext);
-//        m_formatContext = NULL;
-//    }
+    if (m_formatContext) {
+        avformat_close_input(&m_formatContext);
+        m_formatContext = NULL;
+    }
 
-//    if (m_bitFilterContext) {
-//        av_bitstream_filter_close(m_bitFilterContext);
-//        m_bitFilterContext = NULL;
-//    }
+    if (m_bitFilterContext) {
+        av_bitstream_filter_close(m_bitFilterContext);
+        m_bitFilterContext = NULL;
+    }
 
 //    if (m_bsfContext) {
 //        av_bsf_free(&m_bsfContext);
@@ -517,6 +540,10 @@ static int GetAVStreamFPSTimeBase(AVStream *st) {
 
 static int custom_interrupt_callback(void *arg) {
 
+    VideoState * videoState = (VideoState *)arg;
+    if (videoState -> quit) {
+        return 1;
+    }
 
     // do something
     return 0;

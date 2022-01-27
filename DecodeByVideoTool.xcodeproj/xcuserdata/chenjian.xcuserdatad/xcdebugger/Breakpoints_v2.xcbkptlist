@@ -46,8 +46,8 @@
             filePath = "DecodeByVideoTool/CJAVPlayer/Decoder/FFmpegParseHandler.mm"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "240"
-            endingLineNumber = "240"
+            startingLineNumber = "245"
+            endingLineNumber = "245"
             landmarkName = "-isSupportVideoStream:formatContext:sourceWidth:sourceHeight:sourceFps:"
             landmarkType = "7">
          </BreakpointContent>
@@ -62,8 +62,8 @@
             filePath = "DecodeByVideoTool/CJAVPlayer/Decoder/FFmpegParseHandler.mm"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "290"
-            endingLineNumber = "290"
+            startingLineNumber = "295"
+            endingLineNumber = "295"
             landmarkName = "-isSupportVideoStream:formatContext:sourceWidth:sourceHeight:sourceFps:"
             landmarkType = "7">
          </BreakpointContent>
@@ -78,8 +78,8 @@
             filePath = "DecodeByVideoTool/CJAVPlayer/Decoder/FFmpegParseHandler.mm"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "296"
-            endingLineNumber = "296"
+            startingLineNumber = "301"
+            endingLineNumber = "301"
             landmarkName = "-isSupportVideoStream:formatContext:sourceWidth:sourceHeight:sourceFps:"
             landmarkType = "7">
          </BreakpointContent>
@@ -94,8 +94,8 @@
             filePath = "DecodeByVideoTool/CJAVPlayer/Decoder/FFmpegParseHandler.mm"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "284"
-            endingLineNumber = "284"
+            startingLineNumber = "289"
+            endingLineNumber = "289"
             landmarkName = "-isSupportVideoStream:formatContext:sourceWidth:sourceHeight:sourceFps:"
             landmarkType = "7">
          </BreakpointContent>
@@ -110,8 +110,8 @@
             filePath = "DecodeByVideoTool/CJAVPlayer/Decoder/FFmpegParseHandler.mm"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "278"
-            endingLineNumber = "278"
+            startingLineNumber = "283"
+            endingLineNumber = "283"
             landmarkName = "-isSupportVideoStream:formatContext:sourceWidth:sourceHeight:sourceFps:"
             landmarkType = "7">
          </BreakpointContent>

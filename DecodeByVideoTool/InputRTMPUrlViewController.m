@@ -21,7 +21,6 @@
     self.textView = [[UITextView alloc]initWithFrame:CGRectMake(0, 0, [UIScreen mainScreen].bounds.size.width, [UIScreen mainScreen].bounds.size.height)];
     [self.view addSubview:self.textView];
     self.view.backgroundColor = [UIColor whiteColor];
-    [self.navigationController.navigationBar setHidden:NO];
 
 //    self.navigationController.navigationBar.barTintColor = [UIColor whiteColor];
 //    self.navigationController.navigationBar.titleTextAttributes = @{NSForegroundColorAttributeName: [UIColor blueColor],NSFontAttributeName: [UIFont systemFontOfSize:20]};

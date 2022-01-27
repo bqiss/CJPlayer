@@ -32,9 +32,7 @@ typedef enum : NSUInteger {
 
 typedef struct VideoState {
     BOOL isSeekReq;
-    BOOL isPause;
-    BOOL networkERROR;
-    BOOL videoRendererIsReadyForMoreData;
+    BOOL quit;
     BOOL audioRendererIsReadyForMoreData;
     Float64 seekTimeStamp;
 }VideoState;
@@ -97,11 +95,9 @@ struct XDXParseVideoDataInfo {
 - (int)getVideoStreamIndex;
 - (int)getAudioStreamIndex;
 
-
-- (void)seekRequest;
-
 - (struct XDXParseVideoDataInfo)parseVideoPacket: (AVPacket)packet;
 - (void)readFile:(PacketQueue *)videoPacketQueue audioPacketQueue:(PacketQueue *)audioPacketQueue videoState:(VideoState *)videoState;
+- (void)destroyParseHandler;
 @end
 
 NS_ASSUME_NONNULL_END

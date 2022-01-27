@@ -60,44 +60,6 @@ struct Queue {
     return queue -> count <= 0;
 }
 
-- (void)QueuePush:(MyPacket*)data {
-
-//        struct MyPacketList* node;
-//        node = (struct MyPacketList*)malloc(sizeof(struct MyPacketList));
-//        assert(node != NULL);
-//
-//        node->pkt = *data;
-//        node->next = NULL;
-//
-//        if([self QueueEmpty]) {
-//            queue -> front = node;
-//            queue -> rear = node;
-//        }
-//        else {
-//            queue -> rear->next = node;
-//            queue -> rear = node;
-//        }
-//
-//    self.size += data -> packet.size;
-//        ++queue -> count;
-}
-
-- (int)QueuePop:(MyPacket *) data {
-//    if ([self QueueEmpty]) {
-//        return 0;
-//    }
-//    struct MyPacketList* tmp = queue -> front;
-//    *data = queue -> front-> pkt;
-//    self.size -= queue -> front -> pkt.packet.size;
-//    queue -> front = queue -> front->next;
-//    free(tmp);
-//    --queue -> count;
-//
-//
-//    return 1;
-    return 0;
-}
-
 - (int) packet_queue_get:(MyPacket *)pkt {
     MyPacketList *pkt1;
     int ret;
@@ -169,15 +131,21 @@ struct Queue {
     return ret;
 }
 
-- (int)DeleteFront {
-    if ([self QueueEmpty]) {
-        return 0;
+- (void) packet_queue_destroy
+{
+
+    [self packet_queue_flush];
+
+    pthread_mutex_lock(&mutex);
+    while(queue->recycle_pkt) {
+        MyPacketList *pkt = queue->recycle_pkt;
+        if (pkt)
+            queue->recycle_pkt = pkt->next;
+        av_freep(&pkt);
     }
-    struct MyPacketList* tmp = queue -> first_pkt;
-    queue -> last_pkt = queue -> first_pkt -> next;
-    free(tmp);
-    --queue -> count;
-    return 1;
+    free(queue);
+    pthread_mutex_unlock(&mutex);
+    pthread_mutex_destroy(&mutex);
 }
 
 - (int)GetQueueCount {

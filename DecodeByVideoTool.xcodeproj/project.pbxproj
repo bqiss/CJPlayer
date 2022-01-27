@@ -9,8 +9,6 @@
 /* Begin PBXBuildFile section */
 		9C7B6BE1278476C400008D0C /* CoreAudio.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 9C7B6BE0278476C400008D0C /* CoreAudio.framework */; };
 		9C837CBF27880F7B003FF2F8 /* CJAVPlaylayer.m in Sources */ = {isa = PBXBuildFile; fileRef = 9C837CBE27880F7B003FF2F8 /* CJAVPlaylayer.m */; };
-		9C8E1BB8278421B8009C9C6B /* AudioToolBoxDecoder.m in Sources */ = {isa = PBXBuildFile; fileRef = 9C8E1BB7278421B8009C9C6B /* AudioToolBoxDecoder.m */; };
-		9C8E1BBB27842910009C9C6B /* SampleBufferConverter.m in Sources */ = {isa = PBXBuildFile; fileRef = 9C8E1BBA27842910009C9C6B /* SampleBufferConverter.m */; };
 		9C9124552796A882008BBA5D /* PacketQueue.mm in Sources */ = {isa = PBXBuildFile; fileRef = 9C9124542796A882008BBA5D /* PacketQueue.mm */; };
 		9C93E0EA2795182B00B569B1 /* build-openssl-1.1.1d.log in Resources */ = {isa = PBXBuildFile; fileRef = 9C93E0E22795182B00B569B1 /* build-openssl-1.1.1d.log */; };
 		9C93E0EB2795182B00B569B1 /* libcrypto.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 9C93E0E42795182B00B569B1 /* libcrypto.a */; };
@@ -45,7 +43,6 @@
 		9C98C6F72779DE34008A22BF /* libz.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = 9C98C6F62779DE30008A22BF /* libz.tbd */; };
 		9C99CCFA278FB61F00F0513A /* ViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 9C99CCF9278FB61F00F0513A /* ViewController.m */; };
 		9C99CCFD279121D000F0513A /* CJAVPlayer.m in Sources */ = {isa = PBXBuildFile; fileRef = 9C99CCFC279121D000F0513A /* CJAVPlayer.m */; };
-		9C9F5D8D279938400004A97D /* SelectLocalVideoViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 9C9F5D8C279938400004A97D /* SelectLocalVideoViewController.m */; };
 		9C9F5D9127993F320004A97D /* InputRTMPUrlViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 9C9F5D9027993F320004A97D /* InputRTMPUrlViewController.m */; };
 		9CA9B56927A12BF1009185B0 /* SceneDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 9CA9B56827A12BF1009185B0 /* SceneDelegate.m */; };
 		9CAB1416278D1D93001BBDFA /* CJDecoderManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 9CAB1415278D1D93001BBDFA /* CJDecoderManager.m */; };
@@ -73,10 +70,6 @@
 		9C837CBD27880F7B003FF2F8 /* CJAVPlaylayer.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = CJAVPlaylayer.h; sourceTree = "<group>"; };
 		9C837CBE27880F7B003FF2F8 /* CJAVPlaylayer.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = CJAVPlaylayer.m; sourceTree = "<group>"; };
 		9C837CC02788104C003FF2F8 /* CJAVPlayer.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = CJAVPlayer.h; sourceTree = "<group>"; };
-		9C8E1BB6278421B8009C9C6B /* AudioToolBoxDecoder.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = AudioToolBoxDecoder.h; sourceTree = "<group>"; };
-		9C8E1BB7278421B8009C9C6B /* AudioToolBoxDecoder.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = AudioToolBoxDecoder.m; sourceTree = "<group>"; };
-		9C8E1BB927842910009C9C6B /* SampleBufferConverter.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = SampleBufferConverter.h; sourceTree = "<group>"; };
-		9C8E1BBA27842910009C9C6B /* SampleBufferConverter.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = SampleBufferConverter.m; sourceTree = "<group>"; };
 		9C9124532796A882008BBA5D /* PacketQueue.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PacketQueue.h; sourceTree = "<group>"; };
 		9C9124542796A882008BBA5D /* PacketQueue.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = PacketQueue.mm; sourceTree = "<group>"; };
 		9C93E07A2795182B00B569B1 /* pem2.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = pem2.h; sourceTree = "<group>"; };
@@ -348,8 +341,6 @@
 		9C99CCF8278FB61F00F0513A /* ViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ViewController.h; sourceTree = "<group>"; };
 		9C99CCF9278FB61F00F0513A /* ViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ViewController.m; sourceTree = "<group>"; };
 		9C99CCFC279121D000F0513A /* CJAVPlayer.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = CJAVPlayer.m; sourceTree = "<group>"; };
-		9C9F5D8B279938400004A97D /* SelectLocalVideoViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = SelectLocalVideoViewController.h; sourceTree = "<group>"; };
-		9C9F5D8C279938400004A97D /* SelectLocalVideoViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = SelectLocalVideoViewController.m; sourceTree = "<group>"; };
 		9C9F5D8F27993F320004A97D /* InputRTMPUrlViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = InputRTMPUrlViewController.h; sourceTree = "<group>"; };
 		9C9F5D9027993F320004A97D /* InputRTMPUrlViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = InputRTMPUrlViewController.m; sourceTree = "<group>"; };
 		9CA9B56827A12BF1009185B0 /* SceneDelegate.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SceneDelegate.m; sourceTree = "<group>"; };
@@ -402,7 +393,6 @@
 			isa = PBXGroup;
 			children = (
 				9C837CC627881EE2003FF2F8 /* Decoder */,
-				9C8E1BB527842192009C9C6B /* AudioToolBoxDecoder */,
 				9C837CBD27880F7B003FF2F8 /* CJAVPlaylayer.h */,
 				9C837CBE27880F7B003FF2F8 /* CJAVPlaylayer.m */,
 				9C837CC02788104C003FF2F8 /* CJAVPlayer.h */,
@@ -414,6 +404,7 @@
 		9C837CC627881EE2003FF2F8 /* Decoder */ = {
 			isa = PBXGroup;
 			children = (
+				9C94D65627A24B7E000F92AF /* AudioToolBoxDecoder */,
 				9C9124532796A882008BBA5D /* PacketQueue.h */,
 				9C9124542796A882008BBA5D /* PacketQueue.mm */,
 				9C98C6472779DD47008A22BF /* FFmpegParseHandler.h */,
@@ -426,17 +417,6 @@
 				9CAB1415278D1D93001BBDFA /* CJDecoderManager.m */,
 			);
 			path = Decoder;
-			sourceTree = "<group>";
-		};
-		9C8E1BB527842192009C9C6B /* AudioToolBoxDecoder */ = {
-			isa = PBXGroup;
-			children = (
-				9C8E1BB6278421B8009C9C6B /* AudioToolBoxDecoder.h */,
-				9C8E1BB7278421B8009C9C6B /* AudioToolBoxDecoder.m */,
-				9C8E1BB927842910009C9C6B /* SampleBufferConverter.h */,
-				9C8E1BBA27842910009C9C6B /* SampleBufferConverter.m */,
-			);
-			path = AudioToolBoxDecoder;
 			sourceTree = "<group>";
 		};
 		9C93E0772795182B00B569B1 /* openSSL-arm64 */ = {
@@ -786,6 +766,13 @@
 			path = lib;
 			sourceTree = "<group>";
 		};
+		9C94D65627A24B7E000F92AF /* AudioToolBoxDecoder */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			path = AudioToolBoxDecoder;
+			sourceTree = "<group>";
+		};
 		9C98C5FD2779DD27008A22BF = {
 			isa = PBXGroup;
 			children = (
@@ -821,8 +808,6 @@
 				9C98C6512779DD55008A22BF /* DisplayViewController.m */,
 				9C9F5D8F27993F320004A97D /* InputRTMPUrlViewController.h */,
 				9C9F5D9027993F320004A97D /* InputRTMPUrlViewController.m */,
-				9C9F5D8B279938400004A97D /* SelectLocalVideoViewController.h */,
-				9C9F5D8C279938400004A97D /* SelectLocalVideoViewController.m */,
 				9C99CCF8278FB61F00F0513A /* ViewController.h */,
 				9C99CCF9278FB61F00F0513A /* ViewController.m */,
 				9C98C6122779DD27008A22BF /* Main.storyboard */,
@@ -1004,7 +989,6 @@
 				9C99CCFA278FB61F00F0513A /* ViewController.m in Sources */,
 				9C98C64F2779DD47008A22BF /* VideoToolBoxDecoder.mm in Sources */,
 				9CA9B56927A12BF1009185B0 /* SceneDelegate.m in Sources */,
-				9C8E1BBB27842910009C9C6B /* SampleBufferConverter.m in Sources */,
 				9C99CCFD279121D000F0513A /* CJAVPlayer.m in Sources */,
 				9C98C64A2779DD47008A22BF /* FFmpegParseHandler.mm in Sources */,
 				9CAB1416278D1D93001BBDFA /* CJDecoderManager.m in Sources */,
@@ -1012,8 +996,6 @@
 				9C98C64B2779DD47008A22BF /* CJAudioDecoder.mm in Sources */,
 				9C98C6552779DD56008A22BF /* DisplayViewController.m in Sources */,
 				9C98C60B2779DD27008A22BF /* AppDelegate.m in Sources */,
-				9C8E1BB8278421B8009C9C6B /* AudioToolBoxDecoder.m in Sources */,
-				9C9F5D8D279938400004A97D /* SelectLocalVideoViewController.m in Sources */,
 				9C9F5D9127993F320004A97D /* InputRTMPUrlViewController.m in Sources */,
 				9C98C61C2779DD28008A22BF /* main.m in Sources */,
 			);

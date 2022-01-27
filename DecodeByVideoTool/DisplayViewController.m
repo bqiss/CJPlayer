@@ -44,6 +44,8 @@
 }
 
 - (void)setUI {
+    UIBarButtonItem *leftItem1 = [[UIBarButtonItem alloc]initWithBarButtonSystemItem:UIBarButtonSystemItemCancel target:self action:@selector(backAction)];//设置一个系统Item
+    self.navigationItem.leftBarButtonItem = leftItem1;//添加到导航项的左按钮
     self.view.backgroundColor = [UIColor whiteColor];
     playBtn = [[UIButton alloc]initWithFrame:CGRectMake(self.view.center.x, self.view.center.y, 100, 100)];
     playBtn.selected = YES;
@@ -90,11 +92,8 @@
         __strong typeof(weakSelf) strongSelf = weakSelf;
         dispatch_async(dispatch_get_main_queue(), ^{
             strongSelf.currentTimeLabel.text = [strongSelf getStringForTime:CMTimeGetSeconds(time)];
-            if (strongSelf->seekRequest) {
-                return;
-            }
-            Float64 process = CMTimeGetSeconds(time) / [self.player getDuration] ;
-            Float64 lineWidth = self.processView.frame.size.width - 40;
+            Float64 process = CMTimeGetSeconds(time) / [strongSelf.player getDuration] ;
+            Float64 lineWidth = strongSelf.processView.frame.size.width - 40;
             CGRect frame = strongSelf.processView.frame;
             frame.origin.x = -(lineWidth - (lineWidth * process));
             strongSelf.processView.frame = frame;
@@ -112,7 +111,6 @@
 
 - (void)viewDidLoad {
     [super viewDidLoad];
-
 }
 
 - (void)playVideo:(UIButton *)sender {
@@ -129,7 +127,7 @@
 
     if (pan.state == UIGestureRecognizerStateBegan) {
 
-        seekRequest = YES;
+
     }
 
    // [self layerPause];
@@ -156,10 +154,6 @@
     NSLog(@"-----seekStart-----:%f",seekTime);
 
     [self.player seekToTime:seekTime];
-    if (pan.state == UIGestureRecognizerStateEnded) {
-        seekRequest = NO;
-
-    }
 }
 
 - (NSString *)getStringForTime:(Float64)time {
@@ -170,5 +164,17 @@
     int ceilTime = ceil(time);
     return [[NSString alloc]initWithFormat:@"%02d:%02d", ceilTime / 60,ceilTime % 60];
 }
+
+- (void)backAction {
+    [self.player removePlayer];
+    [self dismissViewControllerAnimated:YES completion:^{
+
+    }];
+}
+
+- (void)dealloc {
+    
+}
+
 
 @end

@@ -51,6 +51,7 @@ typedef struct {
     BOOL isNeedResetTimeBase;
 
     int packetSerial;
+    BOOL refresh_request;
 }
 
 @end
@@ -128,14 +129,13 @@ static void VideoDecoderCallback(void *decompressionOutputRefCon, void *sourceFr
 }
 
 - (void)dealloc {
-    _delegate = nil;
-    [self destoryDecoder];
+
 }
 
 #pragma mark - Public
 - (void)startDecodeVideoData:(XDXParseVideoDataInfo *)videoInfo {
-
     //decode begin
+//    pthread_mutex_lock(&_decoder_lock);
 
     packetSerial = videoInfo -> serial;
 
@@ -156,6 +156,7 @@ static void VideoDecoderCallback(void *decompressionOutputRefCon, void *sourceFr
                                extraDataSize:size
                                  decoderInfo:&_decoderInfo];
         }
+
     }
 
     // create decoder
@@ -190,9 +191,11 @@ static void VideoDecoderCallback(void *decompressionOutputRefCon, void *sourceFr
     [self startDecode:videoInfo
               session:_decoderSession
                  lock:_decoder_lock];
+//    pthread_mutex_unlock(&_decoder_lock);
 }
 
 - (void)stopDecoder {
+    _delegate = nil;
     [self destoryDecoder];
 }
 
@@ -276,8 +279,6 @@ static void CFDictionarySetBoolean(CFMutableDictionaryRef dictionary, CFStringRe
     height = height * w_scaler;
 
     uint32_t pixelFormatType = videoFormat;
-    const void *keys[]       = {kCVPixelBufferPixelFormatTypeKey};
-    const void *values[]     = {CFNumberCreate(NULL, kCFNumberSInt32Type, &pixelFormatType)};
 //    CFDictionaryRef attrs    = CFDictionaryCreate(NULL, keys, values, 1, NULL, NULL);
     CFMutableDictionaryRef destinationPixelBufferAttributes = CFDictionaryCreateMutable(
                                                                  NULL,

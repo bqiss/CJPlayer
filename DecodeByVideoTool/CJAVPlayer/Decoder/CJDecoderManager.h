@@ -39,6 +39,7 @@ static const NSNotificationName  kDecodeIsFinishNotificationKey = @"CJDeocderMan
 
 - (void)startDecodeAudioDataWithAVPacket:(MyPacket)packet;
 - (void)startDecodeVideo:(MyPacket)packet;
+- (void)destroyDecoderManager;
 @end
 
 NS_ASSUME_NONNULL_END

@@ -28,6 +28,8 @@ NS_ASSUME_NONNULL_BEGIN
 - (Float64)getDuration;
 
 - (Float64)getCurrentTime;
+
+- (void)removePlayer;
 @end
 
 NS_ASSUME_NONNULL_END

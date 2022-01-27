@@ -68,7 +68,7 @@ static int packetSerial = 0;
 }
 
 - (void)stopDecoder {
-    m_isFirstFrame  = YES;
+    _delegate = nil;
     [self freeAllResources];
 }
 - (void)resetIsFirstFrame {
@@ -94,7 +94,6 @@ static int packetSerial = 0;
 
 - (void)startDecodeAudioDataWithAVPacket:(MyPacket)myPacket audioCodecContext:(AVCodecContext *)audioCodecContext audioFrame:(AVFrame *)audioFrame  audioStreamIndex:(int)audioStreamIndex {
 
-//    pthread_mutex_lock(&_decoder_lock);
     packetSerial = myPacket.serial;
     AVPacket packet = myPacket.packet;
     int result = avcodec_send_packet(audioCodecContext, &packet);
@@ -103,6 +102,7 @@ static int packetSerial = 0;
 
         NSLog(@"end audio data to decoder failed.");
     }else {
+        pthread_mutex_lock(&_decoder_lock);
         while (0 == avcodec_receive_frame(audioCodecContext, audioFrame)) {
             AudioData audioData = {0};
             AVCodecParameters *avcodecpar = m_formatContext -> streams[audioStreamIndex] -> codecpar;
@@ -164,8 +164,8 @@ static int packetSerial = 0;
         if (result != 0) {
             NSLog(@"Decode finish");
         }
-//        pthread_mutex_unlock(&_decoder_lock);
     }
+    pthread_mutex_unlock(&_decoder_lock);
 }
 
 -(AudioStreamBasicDescription)getAudioStreamBasicDescriptionFromCodepar:(AVCodecParameters *)codecPar{
@@ -212,9 +212,10 @@ static int packetSerial = 0;
 }
 
 - (void)freeAllResources {
+    pthread_mutex_lock(&_decoder_lock);
     if (m_audioCodecContext) {
         avcodec_send_packet(m_audioCodecContext, NULL);
-        avcodec_flush_buffers(m_audioCodecContext);
+//        avcodec_flush_buffers(m_audioCodecContext);
 
         if (m_audioCodecContext->hw_device_ctx) {
             av_buffer_unref(&m_audioCodecContext->hw_device_ctx);
@@ -228,6 +229,7 @@ static int packetSerial = 0;
         av_free(m_audioFrame);
         m_audioFrame = NULL;
     }
+    pthread_mutex_unlock(&_decoder_lock);
 }
 
 #pragma mark - Other

@@ -23,6 +23,9 @@ static int rendererSerial = 0;
     id timeObserve;
     dispatch_queue_t observeQueue;
     CMTime observeIntervalTime;
+
+    pthread_mutex_t audioMutex;
+    pthread_mutex_t videoMutex;
 }
 
 
@@ -42,6 +45,8 @@ static int rendererSerial = 0;
 @implementation CJAVPlayer
 - (instancetype)initWithURL:(NSURL *)url layerFrame:(CGRect)frame{
     if (self = [super init]) {
+        pthread_mutex_init(&audioMutex, NULL);
+        pthread_mutex_init(&videoMutex, NULL);
         queue = dispatch_queue_create("playerQueue", DISPATCH_QUEUE_SERIAL);
         videoGetBufferQueue = dispatch_queue_create("videoGetBufferQueue", DISPATCH_QUEUE_SERIAL);
         audioGetBufferQueue = dispatch_queue_create("audioGetBufferQueue", DISPATCH_QUEUE_SERIAL);
@@ -118,6 +123,22 @@ static int rendererSerial = 0;
     observeIntervalTime = time;
 }
 
+- (void)removePlayer {
+    if (timeObserve) {
+        [self.rendererSynchronizer removeTimeObserver:timeObserve];
+        timeObserve = nil;
+    }
+
+
+    [self.audioRenderer stopRequestingMediaData];
+    [self.playLayer stopRequestingMediaData];
+    pthread_mutex_lock(&videoMutex);
+    pthread_mutex_lock(&audioMutex);
+    [self.decoderManager destroyDecoderManager];
+    pthread_mutex_unlock(&audioMutex);
+    pthread_mutex_unlock(&videoMutex);
+}
+
 #pragma mark Get Method
 - (Float64)getDuration {
     int64_t duration = formatContext -> duration;
@@ -145,7 +166,9 @@ static int rendererSerial = 0;
     [self stopEnqueue];
     [self updatePlayer:observeIntervalTime queue:observeQueue usingBlock:self.handler];
 
+
     [self.audioRenderer requestMediaDataWhenReadyOnQueue:audioGetBufferQueue usingBlock:^{
+        pthread_mutex_lock(&self -> audioMutex);
         while (self.audioRenderer.isReadyForMoreMediaData) {
             MyPacket myPacket;
             if ([self.audioPacketQueue packet_queue_get:&myPacket]) {
@@ -161,13 +184,16 @@ static int rendererSerial = 0;
                 }
 
                 [self.decoderManager startDecodeAudioDataWithAVPacket:myPacket];
+
             }else {
                 av_usleep(10000);
             }
         }
+        pthread_mutex_unlock(&self -> audioMutex);
     }];
 
     [self.playLayer requestMediaDataWhenReadyOnQueue:videoGetBufferQueue usingBlock:^{
+        pthread_mutex_lock(&self -> videoMutex);
         while (self.playLayer.isReadyForMoreMediaData) {
             MyPacket myPacket;
             if ([self.videoPacketQueue packet_queue_get:&myPacket]) {
@@ -188,6 +214,7 @@ static int rendererSerial = 0;
                 av_usleep(10000);
             }
         }
+        pthread_mutex_unlock(&self -> videoMutex);
     }];
 //    av_usleep(10000);
     [self.rendererSynchronizer setRate:rate time:CMTimeMake(timeStamp * AV_TIME_BASE, AV_TIME_BASE)];
@@ -218,6 +245,7 @@ static int rendererSerial = 0;
     //if the buffer pts is samller than the rendererSynchronizer timebase, throw it
     if (CMTimeGetSeconds(CMSampleBufferGetPresentationTimeStamp(sampleBuffer -> sampleBuffer)) < videoState -> seekTimeStamp) {
         NSLog(@"throw buffer < seekTimeStamp");
+   
         return;
     }
 
@@ -254,6 +282,13 @@ static int rendererSerial = 0;
 
 - (void)setRate:(int)rate {
     self.rendererSynchronizer.rate = rate;
+}
+
+-(void)dealloc {
+    rendererSerial = 0;
+    free(videoState);
+    [self.playLayer removeObserver:self forKeyPath:@"status"];
+    [self.audioRenderer removeObserver:self forKeyPath:@"status"];
 }
 
 @end
