@@ -22,7 +22,6 @@ static const int kXDXParseHeight1080        = 1080;
 static const int kXDXParseSupportMaxWidth   = 3840;
 static const int kXDXParseSupportMaxHeight  = 2160;
 static int serial = 0;
-static int count = 0;
 
 @interface FFmpegParseHandler ()
 {
@@ -130,90 +129,6 @@ static int GetAVStreamFPSTimeBase(AVStream *st) {
     m_formatContext = [self createFormatContextbyFilePath:path];
 
     
-    if (m_formatContext == NULL) {
-        //log4cplus_error(kModuleName, "%s: create format context failed.",__func__);
-        return;
-    }
-
-    // Get video stream index
-    m_videoStreamIndex = [self getAVStreamIndexWithFormatContext:m_formatContext
-                                                   isVideoStream:YES];
-
-    // Get video stream
-    AVStream *videoStream = m_formatContext->streams[m_videoStreamIndex];
-    m_video_width  = videoStream->codecpar->width;
-    m_video_height = videoStream->codecpar->height;
-    m_video_fps    = GetAVStreamFPSTimeBase(videoStream);
-    //log4cplus_info(kModuleName, "%s: video index:%d, width:%d, height:%d, fps:%d",__func__,m_videoStreamIndex,m_video_width,m_video_height,m_video_fps);
-
-    BOOL isSupport = [self isSupportVideoStream:videoStream
-                                  formatContext:m_formatContext
-                                    sourceWidth:m_video_width
-                                   sourceHeight:m_video_height
-                                      sourceFps:m_video_fps];
-    if (!isSupport) {
-        //log4cplus_error(kModuleName, "%s: Not support the video stream",__func__);
-        return;
-    }
-
-    // Get audio stream index
-    m_audioStreamIndex = [self getAVStreamIndexWithFormatContext:m_formatContext
-                                                   isVideoStream:NO];
-
-    // Get audio stream
-    AVStream *audioStream = m_formatContext->streams[m_audioStreamIndex];
-
-    isSupport = [self isSupportAudioStream:audioStream
-                             formatContext:m_formatContext];
-    if (!isSupport) {
-        //log4cplus_error(kModuleName, "%s: Not support the audio stream",__func__);
-        return;
-    }
-}
-
-- (void)prepareParseWithRTMPUrl:(NSString *)RTMPUrl {
-
-    avformat_network_init();
-
-    //init flush packet
-    av_init_packet(&flushPacket);
-    flushPacket.data = (uint8_t *)&flushPacket;
-    
-
-    int ret;
-
-    m_formatContext = avformat_alloc_context();
-
-    const char *infile_name;
-    //@"rtmp://mobliestream.c3tv.com:554/live/goodtv.sdp"
-    infile_name = "http://192.168.99.158/video.mp4";
-
-    AVDictionary     *opts          = NULL;
-    if (av_stristart(infile_name, "rtmp", NULL) ||
-        av_stristart(infile_name, "rtsp", NULL)) {
-        // There is total different meaning for 'timeout' option in rtmp
-        av_dict_set(&opts, "timeout", NULL, 0);
-    }
-
-    m_formatContext -> interrupt_callback.callback = custom_interrupt_callback;
-    m_formatContext -> interrupt_callback.opaque = m_formatContext;
-
-    //Input
-    if ((ret = avformat_open_input(&m_formatContext, infile_name, 0,&opts)) < 0) {
-        printf( "Could not open input file.");
-        return;
-    }
-
-    if ((ret = avformat_find_stream_info(m_formatContext, 0)) < 0) {
-        printf( "Failed to retrieve input stream information");
-        return;
-    }
-
-
-    //print
-    av_dump_format(m_formatContext, 0, infile_name, 0);
-
-
     if (m_formatContext == NULL) {
         //log4cplus_error(kModuleName, "%s: create format context failed.",__func__);
         return;
@@ -461,7 +376,7 @@ static int GetAVStreamFPSTimeBase(AVStream *st) {
 
             if (packet.stream_index == self->m_videoStreamIndex) {
                 MyPacket myPacket = {0};
-                if (isNeedThrowPacket && (packet.data[4] & 0x60) == 0){
+                if (isNeedThrowPacket && packet.flags == 0x0010){
                     NSLog(@"throw video pkt: pkt.pts < seekTimeStamp!");
                     continue;;
                 }else if (packet.pts * av_q2d(self -> m_formatContext->streams[self -> m_videoStreamIndex]->time_base) > videoState -> seekTimeStamp){

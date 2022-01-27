@@ -18,8 +18,6 @@ static int rendererSerial = 0;
     dispatch_queue_t audioGetBufferQueue;
     BOOL isSeeking;
     BOOL isRunning;
-    BOOL isDecoding;
-    BOOL timeBaseIsReset;
     VideoState *videoState;
     int64_t startTime;
     id timeObserve;
@@ -49,6 +47,7 @@ static int rendererSerial = 0;
         audioGetBufferQueue = dispatch_queue_create("audioGetBufferQueue", DISPATCH_QUEUE_SERIAL);
         [self initLayerAndAudioRenderer:frame];
         [self preparePlayer:url];
+        
     }
     return self;
 }
@@ -61,6 +60,8 @@ static int rendererSerial = 0;
     self.playLayer.opaque = YES;
 
     self.audioRenderer = [[AVSampleBufferAudioRenderer alloc]init];
+    [self.playLayer addObserver:self forKeyPath:@"status" options:NSKeyValueObservingOptionNew context:nil];
+    [self.audioRenderer addObserver:self forKeyPath:@"status" options:NSKeyValueObservingOptionNew context:nil];
     self.videoPacketQueue = [[PacketQueue alloc]init];
     self.audioPacketQueue = [[PacketQueue alloc]init];
 }
@@ -76,6 +77,7 @@ static int rendererSerial = 0;
     [self.rendererSynchronizer addRenderer:self.playLayer];
     [self.rendererSynchronizer addRenderer:self.audioRenderer];
     self.rate = 1;
+    
 
 }
 
@@ -90,8 +92,6 @@ static int rendererSerial = 0;
         [self restartPlayerAtStartTime:0];
         self.rate = 1;
         isRunning = YES;
-        [self.playLayer addObserver:self forKeyPath:@"status" options:NSKeyValueObservingOptionNew context:nil];
-        [self.audioRenderer addObserver:self forKeyPath:@"status" options:NSKeyValueObservingOptionNew context:nil];
         [self.decoderManager startDecode:videoState videoPakcetQueue:self.videoPacketQueue audioPacketQueue:self.audioPacketQueue];
     }else {
         if (self.rate != 0) {
@@ -110,7 +110,6 @@ static int rendererSerial = 0;
         videoState -> seekTimeStamp = timeStamp;
         isSeeking = YES;
     }
-
 }
 
 - (void)addPeriodicTimeObserverForInterval:(CMTime)time queue:(nonnull dispatch_queue_t)queue usingBlock:(void (^)(CMTime time))handler{
@@ -136,15 +135,15 @@ static int rendererSerial = 0;
         timeObserve = nil;
     }
 
-    timeObserve = [self.rendererSynchronizer addPeriodicTimeObserverForInterval:time queue:queue usingBlock:handler];
-
+    if (queue != nil && handler != nil) {
+        timeObserve = [self.rendererSynchronizer addPeriodicTimeObserverForInterval:time queue:queue usingBlock:handler];
+    }
 }
 
 - (void)restartPlayerAtStartTime:(Float64)timeStamp {
     float rate = self.rendererSynchronizer.rate;
     [self stopEnqueue];
     [self updatePlayer:observeIntervalTime queue:observeQueue usingBlock:self.handler];
-
 
     [self.audioRenderer requestMediaDataWhenReadyOnQueue:audioGetBufferQueue usingBlock:^{
         while (self.audioRenderer.isReadyForMoreMediaData) {
@@ -195,9 +194,7 @@ static int rendererSerial = 0;
 }
 
 - (void)stopEnqueue {
-
     self.rendererSynchronizer.rate = 0;
-    NSLog(@"rateIsSetZero!");
     [self.audioRenderer stopRequestingMediaData];
     [self.audioRenderer flush];
 
@@ -212,13 +209,6 @@ static int rendererSerial = 0;
 #pragma mark Enqueue SampleBuffer
 
 -(void)CJDecoderGetVideoSampleBufferCallback:(MySampleBuffer *)sampleBuffer {
-
-//    if (isSeeking && sampleBuffer -> serial == rendererSerial ) {
-//        isSeeking = NO;
-////        [self.rendererSynchronizer setRate:self.rate time:CMTimeMake(videoState -> seekTimeStamp * AV_TIME_BASE, AV_TIME_BASE)];
-//        //NSLog(@"timebase is reset: %f",CMTimeGetSeconds(CMTimeMake(videoState -> seekTimeStamp * AV_TIME_BASE, AV_TIME_BASE)));
-//    }
-
      //if the buffer serial is not equal renderSerial, throw it
     if (sampleBuffer -> serial != rendererSerial) {
         NSLog(@"buffer != rendererSerial!");
@@ -237,8 +227,6 @@ static int rendererSerial = 0;
 
 
     [self.playLayer enqueueSampleBuffer:sampleBuffer -> sampleBuffer];
-
-    NSLog(@"videoEnqueue:%f，timebase:%f",CMTimeGetSeconds(CMSampleBufferGetPresentationTimeStamp(sampleBuffer -> sampleBuffer)),CMTimeGetSeconds(CMTimebaseGetTime(self.rendererSynchronizer.timebase)));
 }
 
 - (void)CJDecoderGetAudioSampleBufferCallback:(MySampleBuffer *)sampleBuffer isFirstFrame:(BOOL)isFirstFrame {
@@ -250,11 +238,11 @@ static int rendererSerial = 0;
     }
 
     [self.audioRenderer enqueueSampleBuffer:sampleBuffer -> sampleBuffer];
-    NSLog(@"audioEnqueue:%f，timebase:%f",CMTimeGetSeconds(CMSampleBufferGetPresentationTimeStamp(sampleBuffer -> sampleBuffer)),CMTimeGetSeconds(CMTimebaseGetTime(self.rendererSynchronizer.timebase)));
 }
 
-- (void)observeValueForKeyPath:(NSString *)keyPath ofObject:(id)object change:(NSDictionary<NSKeyValueChangeKey,id> *)change context:(void *)context {
+#pragma mark other
 
+- (void)observeValueForKeyPath:(NSString *)keyPath ofObject:(id)object change:(NSDictionary<NSKeyValueChangeKey,id> *)change context:(void *)context {
     if ([keyPath  isEqual: @"status"]) {
         if (self.playLayer.status == AVQueuedSampleBufferRenderingStatusFailed) {
             self.rendererSynchronizer.rate = 0;
@@ -262,8 +250,6 @@ static int rendererSerial = 0;
 //            [self restartPlayerAtStartTime:CMTimeGetSeconds(self.rendererSynchronizer.currentTime)];
         }
     }
-
-    
 }
 
 - (void)setRate:(int)rate {

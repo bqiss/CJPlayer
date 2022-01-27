@@ -32,26 +32,13 @@ static const NSNotificationName  kDecodeIsFinishNotificationKey = @"CJDeocderMan
 
 - (instancetype)initWithFilePath: (NSString *)path videoState:(VideoState *)videoState;
 
-- (void)startAudioToolBoxDecoder;
-
-/* Start decoding whether keyframe or not (only decode audio) */
-- (void)startAudioDecoder;
-
 /* Start decoding whether keyframe or not (decode video and audio) */
 - (void)startDecode:(VideoState *)videoState videoPakcetQueue:(PacketQueue *)videoPacketQueue audioPacketQueue:(PacketQueue *)audioPacketQueue;
 
-/* Start decoding until next keyframe (decode video and audio) */
-- (void)startDecodeUntilNextKeyframe;
-
-
 - (void)seekToTime:(Float64) stampTime;
-
-- (void)pauseDecoder;
-- (void)startDecoder;
 
 - (void)startDecodeAudioDataWithAVPacket:(MyPacket)packet;
 - (void)startDecodeVideo:(MyPacket)packet;
-
 @end
 
 NS_ASSUME_NONNULL_END

@@ -29,16 +29,12 @@
     if (self = [super init]) {
         self.parseHandler = [[FFmpegParseHandler alloc]initWithPath:path videoState:videoState];
         avFormatContext = [self.parseHandler getFormatContext];
-//        self.videoDuration = avFormatContext -> duration;
 
         self.vtDecoder = [[VideoToolBoxDecoder alloc]init];
         self.vtDecoder.delegate = self;
 
         self.audioDecoder = [[CJAudioDecoder alloc]initWithFormatContext:avFormatContext audioStreamIndex:[self.parseHandler getAudioStreamIndex]];
         self.audioDecoder.delegate = self;
-//        self.videoPacketQueue = [[PacketQueue alloc]init];
-//        self.audioPacketQueue = [[PacketQueue alloc]init];
-
 
         AudioStreamBasicDescription ffmpegAudioFormat = {
             .mSampleRate         = 48000,
@@ -71,95 +67,15 @@
     free(videoInfo.data);
     free(videoInfo.extraData);
 }
-- (void)DecodeRTMPStream {
-
-}
 
 - (void)startDecode:(VideoState *)videoState videoPakcetQueue:(PacketQueue *)videoPacketQueue audioPacketQueue:(PacketQueue *)audioPacketQueue{
-
     [self.parseHandler readFile:videoPacketQueue audioPacketQueue:audioPacketQueue videoState:videoState];
-
-//    dispatch_async(dispatch_queue_create("audioDecodeQueue", DISPATCH_QUEUE_SERIAL), ^{
-//        for(;;) {
-//
-//            if (!videoState -> audioRendererIsReadyForMoreData) {
-//                av_usleep(10000);
-//                continue;
-//            }
-//
-//            MyPacket myPacket;
-//            if ([self.audioPacketQueue packet_queue_get:&myPacket]) {
-//
-//                //if finish
-//                if (myPacket.packet.data == NULL) {
-//                    break;
-//                }
-//
-//                //if seek;
-//                if (myPacket.packet.data == flushPacket.data) {
-//                    continue;
-//                }
-//
-//                [self.audioDecoder startDecodeAudioDataWithAVPacket:myPacket];
-//                av_packet_unref(&myPacket.packet);
-//            }else {
-//                av_usleep(10000);
-//            }
-//        }
-//    });
-//
-//    dispatch_async(dispatch_queue_create("videoDecodeQueue", DISPATCH_QUEUE_SERIAL), ^{
-//        for(;;) {
-//
-//            if (!videoState -> videoRendererIsReadyForMoreData) {
-//                av_usleep(10000);
-//                continue;
-//            }
-//
-//            if (self.parseHandler.isPause) {
-//                break;
-//            }
-//
-//            MyPacket myPacket;
-//            if ([self.videoPacketQueue packet_queue_get:&myPacket]) {
-//                AVPacket packet = myPacket.packet;
-//
-//                if (packet.data == NULL) {
-//                    break;
-//                }
-//
-//                //if seek;
-//                if (myPacket.packet.data == flushPacket.data) {
-//                    continue;
-//                }
-//                struct XDXParseVideoDataInfo videoInfo = [self.parseHandler parseVideoPacket:packet];
-//                av_packet_unref(&packet);
-//                videoInfo.serial = myPacket.serial;
-//                 [self.vtDecoder startDecodeVideoData:&videoInfo];
-//                free(videoInfo.data);
-//                free(videoInfo.extraData);
-//            } else {
-//
-//                //if queue is empty wait 10ms
-//                av_usleep(10000);
-//            }
-//        }
-//    });
 }
 
 - (void)seekToTime:(Float64) stampTime {
     [self.parseHandler upDateAvContextFormatFromSeekTimeStamp:stampTime];
     [self.parseHandler seekRequest];
 }
-
-- (void)pauseDecoder {
-    self.parseHandler.isPause = YES;
-}
-
-- (void)startDecoder {
-    self.parseHandler.isPause = NO;
-}
-
 
 - (AVFormatContext *)getFormatContext {
     return [self.parseHandler getFormatContext];
