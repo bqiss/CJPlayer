@@ -102,7 +102,11 @@
 
         [_delegate CJDecoderGetAudioSampleBufferCallback:&mySamplebuffer isFirstFrame:isFirstFrame];
     }
-    CFRelease(sampleBuffer);
+
+    if (sampleBuffer) {
+        CFRelease(sampleBuffer);
+    }
+
 }
 
 #pragma mark other
@@ -124,6 +128,10 @@
     CMSampleBufferRef sampleBuffer = NULL;
     CMFormatDescriptionRef format =NULL;
     OSStatus status = CMAudioFormatDescriptionCreate(kCFAllocatorDefault, asbd,0, NULL, 0, NULL, NULL, &format);
+
+    if (status != noErr) {
+        NSLog(@"CMAudioFormatDescriptionCreate fail!");
+    }
 
     status = CMAudioSampleBufferCreateReadyWithPacketDescriptions(kCFAllocatorDefault, blockBuffer, format, audioInfo -> frameSize, CMTimeMakeWithSeconds(audioInfo -> pts, asbd -> mSampleRate), nil, &sampleBuffer);
 

@@ -130,13 +130,14 @@ static int rendererSerial = 0;
     }
 
 
-    [self.audioRenderer stopRequestingMediaData];
-    [self.playLayer stopRequestingMediaData];
-    pthread_mutex_lock(&videoMutex);
-    pthread_mutex_lock(&audioMutex);
+
+    videoState -> quit = YES;
+//    pthread_mutex_lock(&videoMutex);
+//    pthread_mutex_lock(&audioMutex);
+
     [self.decoderManager destroyDecoderManager];
-    pthread_mutex_unlock(&audioMutex);
-    pthread_mutex_unlock(&videoMutex);
+//    pthread_mutex_unlock(&audioMutex);
+//    pthread_mutex_unlock(&videoMutex);
 }
 
 #pragma mark Get Method
@@ -172,7 +173,11 @@ static int rendererSerial = 0;
         while (self.audioRenderer.isReadyForMoreMediaData) {
             MyPacket myPacket;
             if ([self.audioPacketQueue packet_queue_get:&myPacket]) {
-
+                if (self -> videoState -> quit) {
+//                    pthread_mutex_lock(&self -> audioMutex);
+                    [self.audioRenderer stopRequestingMediaData];
+                    break;
+                }
                 //if finish
                 if (myPacket.packet.data == NULL) {
                     break;
@@ -193,12 +198,17 @@ static int rendererSerial = 0;
     }];
 
     [self.playLayer requestMediaDataWhenReadyOnQueue:videoGetBufferQueue usingBlock:^{
+
         pthread_mutex_lock(&self -> videoMutex);
         while (self.playLayer.isReadyForMoreMediaData) {
             MyPacket myPacket;
+            if (self -> videoState -> quit) {
+//                pthread_mutex_lock(&self -> videoMutex);
+                [self.playLayer stopRequestingMediaData];
+                break;
+            }
             if ([self.videoPacketQueue packet_queue_get:&myPacket]) {
                 AVPacket packet = myPacket.packet;
-
                 if (packet.data == NULL) {
                     break;
                 }
@@ -265,7 +275,11 @@ static int rendererSerial = 0;
         return;
     }
 
-    [self.audioRenderer enqueueSampleBuffer:sampleBuffer -> sampleBuffer];
+    if (sampleBuffer -> sampleBuffer) {
+        [self.audioRenderer enqueueSampleBuffer:sampleBuffer -> sampleBuffer];
+    }
+
+
 }
 
 #pragma mark other

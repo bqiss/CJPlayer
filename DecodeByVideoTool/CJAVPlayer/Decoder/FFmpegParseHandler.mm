@@ -11,7 +11,7 @@
 
 #pragma mark - Global Var
 
-#define MAX_QUEUE_SIZE (1024 * 1024)
+#define MAX_QUEUE_SIZE (15 * 1024 * 1024)
 
 
 
