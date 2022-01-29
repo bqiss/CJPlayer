@@ -13,8 +13,6 @@ NS_ASSUME_NONNULL_BEGIN
 @interface CJAVPlayer : NSObject
 @property (nonatomic, strong) CJAVPlaylayer * playLayer;
 
-@property (nonatomic, assign) int palyerRate;
-
 - (instancetype)initWithURL:(NSURL *)url layerFrame:(CGRect)frame;
 
 - (void)play;

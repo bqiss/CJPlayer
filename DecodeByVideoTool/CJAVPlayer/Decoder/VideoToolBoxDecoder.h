@@ -28,7 +28,7 @@ NS_ASSUME_NONNULL_BEGIN
 /**
     Start / Stop decoder
  */
-- (void)startDecodeVideoData:(struct XDXParseVideoDataInfo *)videoInfo;
+- (void)startDecodeVideoData:(struct ParseVideoDataInfo *)videoInfo;
 - (void)stopDecoder;
 - (void)resetIsFirstFrame;
 

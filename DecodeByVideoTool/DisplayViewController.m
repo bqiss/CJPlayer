@@ -14,7 +14,6 @@
     
     dispatch_queue_t queue;
     UIButton * playBtn;
-    int pauseCont;
     bool isVideoPlay;
     bool seekRequest;
 

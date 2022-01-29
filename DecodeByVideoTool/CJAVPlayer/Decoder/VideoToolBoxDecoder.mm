@@ -16,7 +16,7 @@ typedef struct {
     Float64          pts;
     int              fps;
     int              source_index;
-} XDXDecodeVideoInfo;
+} DecodeVideoInfo;
 
 typedef struct {
     uint8_t *vps;
@@ -32,13 +32,13 @@ typedef struct {
     int r_pps_size;
 
     Float64 last_decode_pts;
-} XDXDecoderInfo;
+} DecoderInfo;
 @interface VideoToolBoxDecoder ()
 {
     VTDecompressionSessionRef   _decoderSession;
     CMVideoFormatDescriptionRef _decoderFormatDescription;
 
-    XDXDecoderInfo  _decoderInfo;
+    DecoderInfo  _decoderInfo;
     pthread_mutex_t _decoder_lock;
 
     uint8_t *_lastExtraData;
@@ -60,7 +60,7 @@ typedef struct {
 
 #pragma mark - Callback
 static void VideoDecoderCallback(void *decompressionOutputRefCon, void *sourceFrameRefCon, OSStatus status, VTDecodeInfoFlags infoFlags, CVImageBufferRef pixelBuffer, CMTime presentationTimeStamp, CMTime presentationDuration) {
-    XDXDecodeVideoInfo *sourceRef = (XDXDecodeVideoInfo *)sourceFrameRefCon;
+    DecodeVideoInfo *sourceRef = (DecodeVideoInfo *)sourceFrameRefCon;
 
     if (pixelBuffer == NULL) {
       //  log4cplus_error(kModuleName, "%s: pixelbuffer is NULL status = %d",__func__,status);
@@ -133,7 +133,7 @@ static void VideoDecoderCallback(void *decompressionOutputRefCon, void *sourceFr
 }
 
 #pragma mark - Public
-- (void)startDecodeVideoData:(XDXParseVideoDataInfo *)videoInfo {
+- (void)startDecodeVideoData:(ParseVideoDataInfo *)videoInfo {
     //decode begin
 //    pthread_mutex_lock(&_decoder_lock);
 
@@ -215,7 +215,7 @@ static void CFDictionarySetBoolean(CFMutableDictionaryRef dictionary, CFStringRe
 }
 
 #pragma mark Create / Destory decoder
-- (VTDecompressionSessionRef)createDecoderWithVideoInfo:(XDXParseVideoDataInfo *)videoInfo videoDescRef:(CMVideoFormatDescriptionRef *)videoDescRef videoFormat:(OSType)videoFormat lock:(pthread_mutex_t)lock callback:(VTDecompressionOutputCallback)callback decoderInfo:(XDXDecoderInfo)decoderInfo {
+- (VTDecompressionSessionRef)createDecoderWithVideoInfo:(ParseVideoDataInfo *)videoInfo videoDescRef:(CMVideoFormatDescriptionRef *)videoDescRef videoFormat:(OSType)videoFormat lock:(pthread_mutex_t)lock callback:(VTDecompressionOutputCallback)callback decoderInfo:(DecoderInfo)decoderInfo {
     pthread_mutex_lock(&lock);
 
     OSStatus status;
@@ -404,7 +404,7 @@ static void CFDictionarySetBoolean(CFMutableDictionaryRef dictionary, CFStringRe
     memcpy(*originDataRef, newData, size);
 }
 
-- (void)getNALUInfoWithVideoFormat:(XDXVideoEncodeFormat)videoFormat extraData:(uint8_t *)extraData extraDataSize:(int)extraDataSize decoderInfo:(XDXDecoderInfo *)decoderInfo {
+- (void)getNALUInfoWithVideoFormat:(VideoEncodeFormat)videoFormat extraData:(uint8_t *)extraData extraDataSize:(int)extraDataSize decoderInfo:(DecoderInfo *)decoderInfo {
 
     uint8_t *data = extraData;
     int      size = extraDataSize;
@@ -507,7 +507,7 @@ static void CFDictionarySetBoolean(CFMutableDictionaryRef dictionary, CFStringRe
 }
 
 #pragma mark Decode
-- (void)startDecode:(XDXParseVideoDataInfo *)videoInfo session:(VTDecompressionSessionRef)session lock:(pthread_mutex_t)lock {
+- (void)startDecode:(ParseVideoDataInfo *)videoInfo session:(VTDecompressionSessionRef)session lock:(pthread_mutex_t)lock {
     if (videoInfo -> seekRequest) {
         return;
     }
@@ -520,7 +520,7 @@ static void CFDictionarySetBoolean(CFMutableDictionaryRef dictionary, CFStringRe
     uint8_t *tempData = (uint8_t *)malloc(size);
     memcpy(tempData, data, size);
 
-    XDXDecodeVideoInfo *sourceRef = (XDXDecodeVideoInfo *)malloc(sizeof(XDXParseVideoDataInfo));
+    DecodeVideoInfo *sourceRef = (DecodeVideoInfo *)malloc(sizeof(ParseVideoDataInfo));
     sourceRef->outputPixelbuffer  = NULL;
     sourceRef->rotate             = rotate;
     sourceRef->pts                = videoInfo->pts;

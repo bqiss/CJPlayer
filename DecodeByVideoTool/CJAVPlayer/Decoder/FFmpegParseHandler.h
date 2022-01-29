@@ -28,7 +28,7 @@ typedef enum : NSUInteger {
 typedef enum : NSUInteger {
     XDXH264EncodeFormat,
     XDXH265EncodeFormat,
-} XDXVideoEncodeFormat;
+} VideoEncodeFormat;
 
 typedef struct VideoState {
     BOOL isSeekReq;
@@ -37,7 +37,7 @@ typedef struct VideoState {
     Float64 seekTimeStamp;
 }VideoState;
 
-struct XDXParseVideoDataInfo {
+struct ParseVideoDataInfo {
     int                     flags;
     int                     serial;
     BOOL                    isLastPacket;
@@ -54,7 +54,7 @@ struct XDXParseVideoDataInfo {
     int                     width;
     int                     height;
     CMSampleTimingInfo      timingInfo;
-    XDXVideoEncodeFormat    videoFormat;
+    VideoEncodeFormat    videoFormat;
 };
 
 @interface FFmpegParseHandler : NSObject 
@@ -80,7 +80,7 @@ struct XDXParseVideoDataInfo {
  2.You could get the audio / video infomation by `AVPacket`.
  @param handler get some parse information.
  */
-- (void)startParseWithCompletionHandler:(void (^)(BOOL isVideoFrame, BOOL isFinish, struct XDXParseVideoDataInfo *videoInfo, struct MyPacket packet))handler;
+- (void)startParseWithCompletionHandler:(void (^)(BOOL isVideoFrame, BOOL isFinish, struct ParseVideoDataInfo *videoInfo, struct MyPacket packet))handler;
 
 - (void)startParseGetAVPackeWithCompletionHandler:(void (^)(BOOL isVideoFrame, BOOL isFinish, AVPacket packet))handler;
 
@@ -95,7 +95,7 @@ struct XDXParseVideoDataInfo {
 - (int)getVideoStreamIndex;
 - (int)getAudioStreamIndex;
 
-- (struct XDXParseVideoDataInfo)parseVideoPacket: (AVPacket)packet;
+- (struct ParseVideoDataInfo)parseVideoPacket: (AVPacket)packet;
 - (void)readFile:(PacketQueue *)videoPacketQueue audioPacketQueue:(PacketQueue *)audioPacketQueue videoState:(VideoState *)videoState;
 - (void)destroyParseHandler;
 @end

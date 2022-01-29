@@ -133,7 +133,7 @@ static int GetAVStreamFPSTimeBase(AVStream *st) {
 
     
     if (m_formatContext == NULL) {
-        //log4cplus_error(kModuleName, "%s: create format context failed.",__func__);
+
         return;
     }
 
@@ -146,7 +146,6 @@ static int GetAVStreamFPSTimeBase(AVStream *st) {
     m_video_width  = videoStream->codecpar->width;
     m_video_height = videoStream->codecpar->height;
     m_video_fps    = GetAVStreamFPSTimeBase(videoStream);
-    //log4cplus_info(kModuleName, "%s: video index:%d, width:%d, height:%d, fps:%d",__func__,m_videoStreamIndex,m_video_width,m_video_height,m_video_fps);
 
     BOOL isSupport = [self isSupportVideoStream:videoStream
                                   formatContext:m_formatContext
@@ -239,10 +238,10 @@ static int GetAVStreamFPSTimeBase(AVStream *st) {
 - (BOOL)isSupportVideoStream:(AVStream *)stream formatContext:(AVFormatContext *)formatContext sourceWidth:(int)sourceWidth sourceHeight:(int)sourceHeight sourceFps:(int)sourceFps {
     if (stream->codecpar->codec_type == AVMEDIA_TYPE_VIDEO) {   // Video
         AVCodecID codecID = stream->codecpar->codec_id;
-        //log4cplus_info(kModuleName, "%s: Current video codec format is %s",__func__, avcodec_find_decoder(codecID)->name);
+
         // 目前只支持H264、H265(HEVC iOS11)编码格式的视频文件
         if ((codecID != AV_CODEC_ID_H264 && codecID != AV_CODEC_ID_HEVC) || (codecID == AV_CODEC_ID_HEVC && [[UIDevice currentDevice].systemVersion floatValue] < 11.0)) {
-            //log4cplus_error(kModuleName, "%s: Not suuport the codec",__func__);
+
             return NO;
         }
 
@@ -252,7 +251,7 @@ static int GetAVStreamFPSTimeBase(AVStream *st) {
         if (tag != NULL) {
             int rotate = [[NSString stringWithFormat:@"%s",tag->value] intValue];
             if (rotate != 0 /* && >= iPhone 8P*/) {
-               // log4cplus_error(kModuleName, "%s: Not support rotate for device ",__func__);
+
             }
         }
 
@@ -280,33 +279,28 @@ static int GetAVStreamFPSTimeBase(AVStream *st) {
 
         // 目前最高支持到60FPS
         if (sourceFps > kXDXParseSupportMaxFps + kXDXParseFpsOffSet) {
-         //   log4cplus_error(kModuleName, "%s: Not support the fps",__func__);
+
             return NO;
         }
 
         // 目前最高支持到3840*2160
         if (sourceWidth > kXDXParseSupportMaxWidth || sourceHeight > kXDXParseSupportMaxHeight) {
-          //  log4cplus_error(kModuleName, "%s: Not support the resolution",__func__);
+
             return NO;
         }
 
         // 60FPS -> 1080P
         if (sourceFps > kXDXParseSupportMaxFps - kXDXParseFpsOffSet && (sourceWidth > kXDXParseWidth1920 || sourceHeight > kXDXParseHeight1080)) {
-         //   log4cplus_error(kModuleName, "%s: Not support the fps and resolution",__func__);
+
             return NO;
         }
 
         // 30FPS -> 4K
         if (sourceFps > kXDXParseSupportMaxFps / 2 + kXDXParseFpsOffSet && (sourceWidth >= kXDXParseSupportMaxWidth || sourceHeight >= kXDXParseSupportMaxHeight)) {
-           // log4cplus_error(kModuleName, "%s: Not support the fps and resolution",__func__);
+
             return NO;
         }
 
-        // 6S
-//        if ([[XDXAnywhereTool deviceModelName] isEqualToString:@"iPhone 6s"] && sourceFps > kXDXParseSupportMaxFps - kXDXParseFpsOffSet && (sourceWidth >= kXDXParseWidth1920  || sourceHeight >= kXDXParseHeight1080)) {
-//            log4cplus_error(kModuleName, "%s: Not support the fps and resolution",__func__);
-//            return NO;
-//        }
         return YES;
     }else {
         return NO;
@@ -317,10 +311,8 @@ static int GetAVStreamFPSTimeBase(AVStream *st) {
 - (BOOL)isSupportAudioStream:(AVStream *)stream formatContext:(AVFormatContext *)formatContext {
     if (stream->codecpar->codec_type == AVMEDIA_TYPE_AUDIO) {
         AVCodecID codecID = stream->codecpar->codec_id;
-       // log4cplus_info(kModuleName, "%s: Current audio codec format is %s",__func__, avcodec_find_decoder(codecID)->name);
         // 本项目只支持AAC格式的音频
         if (codecID != AV_CODEC_ID_AAC) {
-           // log4cplus_error(kModuleName, "%s: Only support AAC format for the demo.",__func__);
             return NO;
         }
 
@@ -345,7 +337,7 @@ static int GetAVStreamFPSTimeBase(AVStream *st) {
         for (;;) {
             int ret;
 
-            if (self -> m_isStopParse) {
+            if (videoState -> quit) {
                 break;
             }
             
@@ -381,8 +373,8 @@ static int GetAVStreamFPSTimeBase(AVStream *st) {
             
             if (size < 0 || packet.size < 0) {
 
-//                [videoPacketQueue packet_queue_put_nullpacket:self->m_videoStreamIndex];
-//                [audioPacketQueue packet_queue_put_nullpacket:self->m_audioStreamIndex];
+                [videoPacketQueue packet_queue_put_nullpacket:self->m_videoStreamIndex];
+                [audioPacketQueue packet_queue_put_nullpacket:self->m_audioStreamIndex];
                 av_usleep(10000);
                 continue;
             }
@@ -391,7 +383,7 @@ static int GetAVStreamFPSTimeBase(AVStream *st) {
             if (packet.stream_index == self->m_videoStreamIndex) {
                 MyPacket myPacket = {0};
                 if (isNeedThrowPacket && packet.flags == 0x0010){
-                    NSLog(@"throw video pkt: pkt.pts < seekTimeStamp!");
+                    //NSLog(@"throw video pkt: pkt.pts < seekTimeStamp!");
                     av_packet_unref(&packet);
                     continue;;
                 }else if (packet.pts * av_q2d(self -> m_formatContext->streams[self -> m_videoStreamIndex]->time_base) > videoState -> seekTimeStamp){
@@ -406,7 +398,7 @@ static int GetAVStreamFPSTimeBase(AVStream *st) {
                 MyPacket myPacket = {0};
                 if (isNeedThrowPacket && packet.pts * av_q2d(self -> m_formatContext->streams[self -> m_audioStreamIndex]->time_base) < videoState -> seekTimeStamp) {
                     av_packet_unref(&packet);
-                    NSLog(@"throw audio pkt: pkt.pts < seekTimeStamp!");
+//                    NSLog(@"throw audio pkt: pkt.pts < seekTimeStamp!");
                     continue;
                 }
                 myPacket.packet = packet;
@@ -418,8 +410,8 @@ static int GetAVStreamFPSTimeBase(AVStream *st) {
     pthread_mutex_unlock(&mutex);
 }
 
-- (struct XDXParseVideoDataInfo)parseVideoPacket: (AVPacket)packet{
-    XDXParseVideoDataInfo videoInfo = {0};
+- (struct ParseVideoDataInfo)parseVideoPacket: (AVPacket)packet{
+    ParseVideoDataInfo videoInfo = {0};
 
     if (packet.data == flushPacket.data) {
         videoInfo.data = flushPacket.data;
@@ -452,7 +444,7 @@ static int GetAVStreamFPSTimeBase(AVStream *st) {
     }
 
     if (videoInfo.videoRotate != 0 /* &&  <= iPhone 8*/) {
-     //   log4cplus_error(kModuleName, "%s: Not support the angle",__func__);
+
         //break;
     }
 
@@ -488,8 +480,6 @@ static int GetAVStreamFPSTimeBase(AVStream *st) {
 
     av_bitstream_filter_filter(self->m_bitFilterContext, m_formatContext->streams[m_videoStreamIndex]->codec, NULL, &new_packet.data, &new_packet.size, packet.data, packet.size, 0);
 
-    //log4cplus_info(kModuleName, "%s: extra data : %s , size : %d",__func__,formatContext->streams[videoStreamIndex]->codec->extradata,formatContext->streams[videoStreamIndex]->codec->extradata_size);
-
     CMSampleTimingInfo timingInfo;
     CMTime presentationTimeStamp     = kCMTimeInvalid;
     presentationTimeStamp            = CMTimeMakeWithSeconds(packet.pts * av_q2d(m_formatContext->streams[m_videoStreamIndex]->time_base), fps);
@@ -519,7 +509,6 @@ static int GetAVStreamFPSTimeBase(AVStream *st) {
 
 
 - (void)freeAllResources {
-    //log4cplus_error(kModuleName, "%s: Free all resources !",__func__);
     if (m_formatContext) {
         avformat_close_input(&m_formatContext);
         m_formatContext = NULL;

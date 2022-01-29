@@ -144,11 +144,7 @@ static int packetSerial = 0;
 
             audioData.data = audio_data;
             audioData.size = out_linesize;
-            audioData.frameSize = av_samples_get_buffer_size(NULL,
-                                                             audioCodecContext->channels,
-                                                             1,
-                                                             audioCodecContext->sample_fmt,
-                                                             1);
+            audioData.frameSize = audioCodecContext -> frame_size;
             audioData.pts = ptsSec;
             audioData.duration = duration;
             audioData.asbd = &asbd;

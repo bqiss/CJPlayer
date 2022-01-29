@@ -60,7 +60,7 @@
 
 - (void)startDecodeVideo:(MyPacket)myPacket {
     AVPacket packet = myPacket.packet;
-    struct XDXParseVideoDataInfo videoInfo = [self.parseHandler parseVideoPacket:packet];
+    struct ParseVideoDataInfo videoInfo = [self.parseHandler parseVideoPacket:packet];
     av_packet_unref(&packet);
     videoInfo.serial = myPacket.serial;
      [self.vtDecoder startDecodeVideoData:&videoInfo];

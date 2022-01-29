@@ -90,6 +90,8 @@ static int rendererSerial = 0;
 
 - (void)pause {
     self.rate = 0;
+//    [self.audioRenderer stopRequestingMediaData];
+//    [self.playLayer stopRequestingMediaData];
 }
 
 - (void)play {
@@ -129,15 +131,13 @@ static int rendererSerial = 0;
         timeObserve = nil;
     }
 
-
-
     videoState -> quit = YES;
-//    pthread_mutex_lock(&videoMutex);
-//    pthread_mutex_lock(&audioMutex);
-
+    [self stopEnqueue];
+    pthread_mutex_lock(&videoMutex);
+    pthread_mutex_lock(&audioMutex);
     [self.decoderManager destroyDecoderManager];
-//    pthread_mutex_unlock(&audioMutex);
-//    pthread_mutex_unlock(&videoMutex);
+    pthread_mutex_unlock(&audioMutex);
+    pthread_mutex_unlock(&videoMutex);
 }
 
 #pragma mark Get Method
@@ -157,7 +157,7 @@ static int rendererSerial = 0;
         timeObserve = nil;
     }
 
-    if (queue != nil && handler != nil) {
+    if (queue != nil && handler != nil && CMTimeGetSeconds(time)) {
         timeObserve = [self.rendererSynchronizer addPeriodicTimeObserverForInterval:time queue:queue usingBlock:handler];
     }
 }
@@ -173,11 +173,6 @@ static int rendererSerial = 0;
         while (self.audioRenderer.isReadyForMoreMediaData) {
             MyPacket myPacket;
             if ([self.audioPacketQueue packet_queue_get:&myPacket]) {
-                if (self -> videoState -> quit) {
-//                    pthread_mutex_lock(&self -> audioMutex);
-                    [self.audioRenderer stopRequestingMediaData];
-                    break;
-                }
                 //if finish
                 if (myPacket.packet.data == NULL) {
                     break;
@@ -189,9 +184,10 @@ static int rendererSerial = 0;
                 }
 
                 [self.decoderManager startDecodeAudioDataWithAVPacket:myPacket];
-
+                break;
             }else {
                 av_usleep(10000);
+                break;
             }
         }
         pthread_mutex_unlock(&self -> audioMutex);
@@ -200,16 +196,18 @@ static int rendererSerial = 0;
     [self.playLayer requestMediaDataWhenReadyOnQueue:videoGetBufferQueue usingBlock:^{
 
         pthread_mutex_lock(&self -> videoMutex);
-        while (self.playLayer.isReadyForMoreMediaData) {
+        while (self.playLayer.isReadyForMoreMediaData ) {
+
             MyPacket myPacket;
-            if (self -> videoState -> quit) {
-//                pthread_mutex_lock(&self -> videoMutex);
-                [self.playLayer stopRequestingMediaData];
-                break;
-            }
             if ([self.videoPacketQueue packet_queue_get:&myPacket]) {
                 AVPacket packet = myPacket.packet;
+                //
                 if (packet.data == NULL) {
+                    self ->  isRunning = NO;
+                    self.rendererSynchronizer.rate = 0;
+                    [self.playLayer stopRequestingMediaData];
+                    [self.audioRenderer stopRequestingMediaData];
+                    self ->  videoState -> quit = YES;
                     break;
                 }
 
@@ -218,10 +216,12 @@ static int rendererSerial = 0;
                     continue;
                 }
                 [self.decoderManager startDecodeVideo:myPacket];
+                break;
             } else {
 
                 //if queue is empty wait 10ms
                 av_usleep(10000);
+                break;
             }
         }
         pthread_mutex_unlock(&self -> videoMutex);

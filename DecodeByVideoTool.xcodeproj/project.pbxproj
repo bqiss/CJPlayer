@@ -404,7 +404,6 @@
 		9C837CC627881EE2003FF2F8 /* Decoder */ = {
 			isa = PBXGroup;
 			children = (
-				9C94D65627A24B7E000F92AF /* AudioToolBoxDecoder */,
 				9C9124532796A882008BBA5D /* PacketQueue.h */,
 				9C9124542796A882008BBA5D /* PacketQueue.mm */,
 				9C98C6472779DD47008A22BF /* FFmpegParseHandler.h */,
@@ -764,13 +763,6 @@
 				9C93E328279585A400B569B1 /* libswscale.a */,
 			);
 			path = lib;
-			sourceTree = "<group>";
-		};
-		9C94D65627A24B7E000F92AF /* AudioToolBoxDecoder */ = {
-			isa = PBXGroup;
-			children = (
-			);
-			path = AudioToolBoxDecoder;
 			sourceTree = "<group>";
 		};
 		9C98C5FD2779DD27008A22BF = {
