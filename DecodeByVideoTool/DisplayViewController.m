@@ -32,10 +32,14 @@
 
 @implementation DisplayViewController
 
+
+
 - (instancetype)initWithUrl:(NSURL *)url {
-    
+
+
     if (self = [super init]) {
         self.player = [[CJAVPlayer alloc]initWithURL:url layerFrame:self.view.layer.frame];
+
         [self.view.layer addSublayer:self.player.playLayer];
         [self setUI];
     }
@@ -83,7 +87,7 @@
     self.currentTimeLabel.text = currentTimeText;
     [self.timeView addSubview:self.currentTimeLabel];
 
-    NSURL *rtmpURL = [[NSURL alloc]initWithString:@"rtmp://ypzb-pull.webgame163.com/star/205d6bb64db0c61343853984?time=1642665603&sign=c0744144d4a71ef18684c558ac608a28&ws=_HOST_PULL_YOUJIA_8686C_"];
+    NSURL *rtmpURL = [[NSURL alloc]initWithString:@"rtmp://192.168.99.158/live/livestream.flv"];
 
 
     __weak typeof(self) weakSelf = self;

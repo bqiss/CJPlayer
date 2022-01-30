@@ -347,7 +347,6 @@ static int GetAVStreamFPSTimeBase(AVStream *st) {
                     NSLog(@"error while seeking!");
                     break;
                 }
-
                 [videoPacketQueue packet_queue_flush];
                 [audioPacketQueue packet_queue_flush];
                 MyPacket myPacket = {0};
@@ -373,8 +372,8 @@ static int GetAVStreamFPSTimeBase(AVStream *st) {
             
             if (size < 0 || packet.size < 0) {
 
-                [videoPacketQueue packet_queue_put_nullpacket:self->m_videoStreamIndex];
-                [audioPacketQueue packet_queue_put_nullpacket:self->m_audioStreamIndex];
+//                [videoPacketQueue packet_queue_put_nullpacket:self->m_videoStreamIndex];
+//                [audioPacketQueue packet_queue_put_nullpacket:self->m_audioStreamIndex];
                 av_usleep(10000);
                 continue;
             }

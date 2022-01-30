@@ -54,6 +54,11 @@ struct Queue {
     queue->recycle_pkt = NULL;
     queue->count = 0;
     queue->serial = 0;
+    queue -> size = 0;
+    queue -> alloc_count = 0;
+    queue -> recycle_count = 0;
+    queue -> nb_packets = 0;
+    queue -> duration = 0;
 }
 
 - (int) QueueEmpty {

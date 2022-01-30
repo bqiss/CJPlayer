@@ -557,7 +557,7 @@ static void CFDictionarySetBoolean(CFMutableDictionaryRef dictionary, CFStringRe
                                                                            sampleBuffer,
                                                                            0,
                                                                            sourceRef,
-                                                                           &flagOut);
+                                                                           0);
             if(decodeStatus == kVTInvalidSessionErr) {
                 pthread_mutex_unlock(&lock);
                 [self destoryDecoder];

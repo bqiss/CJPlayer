@@ -167,8 +167,8 @@ static int rendererSerial = 0;
     [self stopEnqueue];
     [self updatePlayer:observeIntervalTime queue:observeQueue usingBlock:self.handler];
 
-
     [self.audioRenderer requestMediaDataWhenReadyOnQueue:audioGetBufferQueue usingBlock:^{
+
         pthread_mutex_lock(&self -> audioMutex);
         while (self.audioRenderer.isReadyForMoreMediaData) {
             MyPacket myPacket;
@@ -216,6 +216,7 @@ static int rendererSerial = 0;
                     continue;
                 }
                 [self.decoderManager startDecodeVideo:myPacket];
+
                 break;
             } else {
 
