@@ -136,8 +136,7 @@ static int rendererSerial = 0;
     pthread_mutex_lock(&videoMutex);
     pthread_mutex_lock(&audioMutex);
     [self.decoderManager destroyDecoderManager];
-    pthread_mutex_unlock(&audioMutex);
-    pthread_mutex_unlock(&videoMutex);
+
 }
 
 #pragma mark Get Method
@@ -168,7 +167,6 @@ static int rendererSerial = 0;
     [self updatePlayer:observeIntervalTime queue:observeQueue usingBlock:self.handler];
 
     [self.audioRenderer requestMediaDataWhenReadyOnQueue:audioGetBufferQueue usingBlock:^{
-
         pthread_mutex_lock(&self -> audioMutex);
         while (self.audioRenderer.isReadyForMoreMediaData) {
             MyPacket myPacket;

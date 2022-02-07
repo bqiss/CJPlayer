@@ -13,9 +13,6 @@
 #import "PacketQueue.h"
 
 NS_ASSUME_NONNULL_BEGIN
-static const NSNotificationName  kDecodeIsFinishNotificationKey = @"CJDeocderManangerDecodeIsFinish";
-
-
 @protocol CJDecoderManagerCallDelegate <NSObject>
 - (void)CJDecoderGetVideoSampleBufferCallback:(MySampleBuffer *)sampleBuffer;
 
