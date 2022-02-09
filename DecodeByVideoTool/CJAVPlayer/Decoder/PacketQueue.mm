@@ -117,8 +117,10 @@ struct Queue {
     pkt->data = NULL;
     pkt->size = 0;
     pkt->stream_index = streamIndex;
+
     MyPacket myPacket = {0};
     myPacket.packet = *pkt;
+    myPacket.serial = queue -> serial;
     return [self packet_queue_put:&myPacket];
 }
 

@@ -132,6 +132,9 @@ static int packetSerial = 0;
     //    audioInfo.duration = packet.duration* av_q2d(m_formatContext->streams[audioStreamIndex]->time_base);
     //    audioInfo.frameSize = audioCodecContext -> frame_size;
     //    audioInfo.serial = myPacket.serial;
+    if (audioCodecContext == NULL) {
+        return;
+    }
     int result = avcodec_send_packet(audioCodecContext, &packet);
 
     if (result < 0) {

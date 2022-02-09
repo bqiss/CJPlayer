@@ -91,7 +91,7 @@
 
 
     __weak typeof(self) weakSelf = self;
-    [self.player addPeriodicTimeObserverForInterval:CMTimeMake(1, 120) queue:dispatch_get_main_queue() usingBlock:^(CMTime time) {
+    [self.player addPeriodicTimeObserverForInterval:CMTimeMake(1, 30) queue:dispatch_get_main_queue() usingBlock:^(CMTime time) {
         __strong typeof(weakSelf) strongSelf = weakSelf;
         dispatch_async(dispatch_get_main_queue(), ^{
             strongSelf.currentTimeLabel.text = [strongSelf getStringForTime:CMTimeGetSeconds(time)];
@@ -101,7 +101,6 @@
             frame.origin.x = -(lineWidth - (lineWidth * process));
             strongSelf.processView.frame = frame;
         });
-
     }];
 
     [self.player play];
@@ -130,7 +129,7 @@
 
     if (pan.state == UIGestureRecognizerStateBegan) {
 
-
+        [self.player pause];
     }
 
    // [self layerPause];
@@ -154,9 +153,13 @@
     float process = 1 - (-processFrame.origin.x / (self.view.frame.size.width - 40));
 
     seekTime = [self.player getDuration] * process;
-    NSLog(@"-----seekStart-----:%f",seekTime);
+    
 
-    [self.player seekToTime:seekTime];
+
+    if (pan.state == UIGestureRecognizerStateEnded) {
+        [self.player seekToTime:seekTime];
+        [self.player play];
+    }
 }
 
 - (NSString *)getStringForTime:(Float64)time {

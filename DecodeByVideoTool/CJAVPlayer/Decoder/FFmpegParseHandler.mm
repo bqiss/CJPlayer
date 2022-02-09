@@ -354,6 +354,7 @@ static int GetAVStreamFPSTimeBase(AVStream *st) {
                 [audioPacketQueue packet_queue_put:&myPacket];
                 videoState -> isSeekReq = NO;
                 isNeedThrowPacket = YES;
+
             }
 
 
@@ -370,11 +371,12 @@ static int GetAVStreamFPSTimeBase(AVStream *st) {
             int size = av_read_frame(self->m_formatContext, &packet);
             
             if (size < 0 || packet.size < 0) {
-
                 [videoPacketQueue packet_queue_put_nullpacket:self->m_videoStreamIndex];
                 [audioPacketQueue packet_queue_put_nullpacket:self->m_audioStreamIndex];
                 av_usleep(10000);
-                break;
+                continue;
+            }else {
+
             }
 
 

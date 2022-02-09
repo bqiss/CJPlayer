@@ -19,6 +19,7 @@ static int64_t startTime = 0;
     dispatch_queue_t audioGetBufferQueue;
     BOOL isSeeking;
     BOOL isRunning;
+    BOOL isRestartPlay;
     VideoState *videoState;
     id timeObserve;
     dispatch_queue_t observeQueue;
@@ -95,11 +96,17 @@ static int64_t startTime = 0;
 }
 
 - (void)play {
+    if (isRestartPlay) {
+        isRestartPlay = NO;
+        [self seekToTime:0];
+
+    }
+
     if (!isRunning) {
+        [self.decoderManager startDecode:videoState videoPakcetQueue:self.videoPacketQueue audioPacketQueue:self.audioPacketQueue];
         [self restartPlayerAtStartTime:0];
         self.rate = 1;
         isRunning = YES;
-        [self.decoderManager startDecode:videoState videoPakcetQueue:self.videoPacketQueue audioPacketQueue:self.audioPacketQueue];
     }else {
         if (self.rate != 0) {
             return;
@@ -111,11 +118,12 @@ static int64_t startTime = 0;
 
 - (void)seekToTime:(Float64)timeStamp {
     if (!isSeeking) {
+        NSLog(@"-----seekStart-----:%f",timeStamp);
         rendererSerial++;
-        [self restartPlayerAtStartTime:timeStamp];
         videoState -> isSeekReq = YES;
         videoState -> seekTimeStamp = timeStamp;
         isSeeking = YES;
+        [self restartPlayerAtStartTime:timeStamp];
     }
 }
 
@@ -173,7 +181,7 @@ static int64_t startTime = 0;
             if ([self.audioPacketQueue packet_queue_get:&myPacket]) {
                 //if finish
                 if (myPacket.packet.data == NULL) {
-                    break;
+                    continue;;
                 }
 
                 //if seek;
@@ -192,7 +200,6 @@ static int64_t startTime = 0;
     }];
 
     [self.playLayer requestMediaDataWhenReadyOnQueue:videoGetBufferQueue usingBlock:^{
-
         pthread_mutex_lock(&self -> videoMutex);
         while (self.playLayer.isReadyForMoreMediaData ) {
 
@@ -200,24 +207,27 @@ static int64_t startTime = 0;
             if ([self.videoPacketQueue packet_queue_get:&myPacket]) {
                 AVPacket packet = myPacket.packet;
                 //
-                if (packet.data == NULL) {
-                    self ->  isRunning = NO;
-                    self.rendererSynchronizer.rate = 0;
-                    [self.playLayer stopRequestingMediaData];
-                    [self.audioRenderer stopRequestingMediaData];
-                    self ->  videoState -> quit = YES;
-                    break;
-                }
-
                 //if seek;
                 if (myPacket.packet.data == flushPacket.data) {
                     continue;
                 }
+
+                if (packet.data == NULL) {
+                    //if last serial nullPkt: continue
+                    if (myPacket.serial != rendererSerial) {
+                        continue;
+                    }
+                    //if video finish
+                    [self stopEnqueue];
+                    self -> isRestartPlay = YES;
+                    break;
+                }
+
+
                 [self.decoderManager startDecodeVideo:myPacket];
 
                 break;
             } else {
-
                 //if queue is empty wait 10ms
                 av_usleep(10000);
                 break;
@@ -225,7 +235,6 @@ static int64_t startTime = 0;
         }
         pthread_mutex_unlock(&self -> videoMutex);
     }];
-    av_usleep(10000);
     [self.rendererSynchronizer setRate:rate time:CMTimeMake(timeStamp * AV_TIME_BASE, AV_TIME_BASE)];
 }
 
@@ -245,6 +254,7 @@ static int64_t startTime = 0;
 #pragma mark Enqueue SampleBuffer
 
 -(void)CJDecoderGetVideoSampleBufferCallback:(MySampleBuffer *)sampleBuffer {
+
      //if the buffer serial is not equal renderSerial, throw it
     if (sampleBuffer -> serial != rendererSerial) {
         return;
