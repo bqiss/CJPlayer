@@ -99,10 +99,8 @@ static int GetAVStreamFPSTimeBase(AVStream *st) {
     pthread_mutex_lock(&mutex);
     m_isStopParse = YES;
     [self freeAllResources];
-    if (audioQueue) {
-        [audioQueue packet_queue_destroy];
-        [videoQueue packet_queue_destroy];
-    }
+    [audioQueue packet_queue_destroy];
+    [videoQueue packet_queue_destroy];
     pthread_mutex_unlock(&mutex);
 }
 #pragma mark Get Method
@@ -177,16 +175,16 @@ static int GetAVStreamFPSTimeBase(AVStream *st) {
         //log4cplus_error(kModuleName, "%s: file path is NULL",__func__);
         return NULL;
     }
-
+    avformat_network_init();
     AVFormatContext *formatContext = NULL;
     AVDictionary     *opts          = NULL;
 
-    const char *infile_name = [filePath cStringUsingEncoding:NSUTF8StringEncoding];
+    const char *infile_name = [filePath UTF8String];
 
-    if (av_stristart(infile_name, "http", NULL) ||
+      if (av_stristart(infile_name, "http", NULL) ||
         av_stristart(infile_name, "https", NULL)) {
         // There is total different meaning for 'timeout' option in rtmp
-        avformat_network_init();
+
         av_dict_set(&opts, "timeout", "2000000", 0);//设置超时2秒
     }
 
@@ -331,8 +329,9 @@ static int GetAVStreamFPSTimeBase(AVStream *st) {
     m_formatContext -> interrupt_callback.opaque = videoState;
 
     __block BOOL isNeedThrowPacket;
-    pthread_mutex_lock(&mutex);
+
     dispatch_async(parseQueue, ^{
+        pthread_mutex_lock(&self -> mutex);
         AVPacket    packet;
         for (;;) {
             int ret;
@@ -375,7 +374,7 @@ static int GetAVStreamFPSTimeBase(AVStream *st) {
                 [videoPacketQueue packet_queue_put_nullpacket:self->m_videoStreamIndex];
                 [audioPacketQueue packet_queue_put_nullpacket:self->m_audioStreamIndex];
                 av_usleep(10000);
-                continue;
+                break;
             }
 
 
@@ -405,8 +404,9 @@ static int GetAVStreamFPSTimeBase(AVStream *st) {
                 continue;
             }
         }
+        pthread_mutex_unlock(&self -> mutex);
     });
-    pthread_mutex_unlock(&mutex);
+
 }
 
 - (struct ParseVideoDataInfo)parseVideoPacket: (AVPacket)packet{
@@ -455,10 +455,10 @@ static int GetAVStreamFPSTimeBase(AVStream *st) {
     static char filter_name[32];
     if (m_formatContext->streams[m_videoStreamIndex]->codecpar->codec_id == AV_CODEC_ID_H264) {
         strncpy(filter_name, "h264_mp4toannexb", 32);
-        videoInfo.videoFormat = XDXH264EncodeFormat;
+        videoInfo.videoFormat = H264EncodeFormat;
     } else if (m_formatContext->streams[m_videoStreamIndex]->codecpar->codec_id == AV_CODEC_ID_HEVC) {
         strncpy(filter_name, "hevc_mp4toannexb", 32);
-        videoInfo.videoFormat = XDXH265EncodeFormat;
+        videoInfo.videoFormat = H265EncodeFormat;
     }
 
     /* new API can't get correct sps, pps.

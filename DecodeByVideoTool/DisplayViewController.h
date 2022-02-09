@@ -12,7 +12,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface DisplayViewController : UIViewController
 @property (nonatomic, copy) NSURL *url;
-- (instancetype)initWithUrl:(NSURL *)url;
+- (instancetype)initWithUrl:(NSString *)urlStr;
 @end
 
 NS_ASSUME_NONNULL_END

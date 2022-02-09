@@ -11,16 +11,19 @@
 #import <pthread.h>
 
 NS_ASSUME_NONNULL_BEGIN
+struct AudioDescription {
+    AudioStreamBasicDescription asbd;
+    int frameSize;
+    int out_linesize;
+    int out_buffer_size;
+};
 
 struct AudioData {
     uint8_t * data;
     int size;
-    int frameSize;
     int serial;
     Float64 pts;
     Float64 duration;
-    AudioStreamBasicDescription * asbd;
-    BOOL isNeedReseTimebase;
 };
 
 @protocol CJAudioDecoderDelegate <NSObject>
@@ -39,6 +42,8 @@ struct AudioData {
 - (void)stopDecoder;
 
 - (void)resetIsFirstFrame;
+
+- (struct AudioDescription)getAudioDesc;
 @end
 
 NS_ASSUME_NONNULL_END

@@ -102,11 +102,16 @@ typedef enum MyFileType {
     NSLog(@"%@",pathString);
 
     [self dismissViewControllerAnimated:YES completion:^{
-        DisplayViewController *displayVC = [[DisplayViewController alloc]initWithUrl:url];
+        DisplayViewController *displayVC = [[DisplayViewController alloc]initWithUrl:url.relativePath];
         displayVC.modalPresentationStyle = UIModalPresentationFullScreen;
         UINavigationController *navigationController = [[UINavigationController alloc]initWithRootViewController:displayVC];
 
-        [self presentViewController:navigationController animated:YES completion:nil];
+//        [self.navigationController pushViewController:displayVC animated:YES];
+        [self presentViewController:navigationController animated:YES completion:^{
+
+        }];
+
+       
     }];
 }
 @end

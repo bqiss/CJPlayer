@@ -10,12 +10,15 @@
 
 #define kModuleName "XDXVideoDecoder"
 
+
 typedef struct {
     CVPixelBufferRef outputPixelbuffer;
     int              rotate;
     Float64          pts;
     int              fps;
+    int              flags;
     int              source_index;
+    int64_t          start_time;
 } DecodeVideoInfo;
 
 typedef struct {
@@ -52,6 +55,7 @@ typedef struct {
 
     int packetSerial;
     BOOL refresh_request;
+    BOOL count;
 }
 
 @end
@@ -60,8 +64,10 @@ typedef struct {
 
 #pragma mark - Callback
 static void VideoDecoderCallback(void *decompressionOutputRefCon, void *sourceFrameRefCon, OSStatus status, VTDecodeInfoFlags infoFlags, CVImageBufferRef pixelBuffer, CMTime presentationTimeStamp, CMTime presentationDuration) {
-    DecodeVideoInfo *sourceRef = (DecodeVideoInfo *)sourceFrameRefCon;
 
+
+    DecodeVideoInfo *sourceRef = (DecodeVideoInfo *)sourceFrameRefCon;
+    printf("%lld, %d \n",(av_gettime() - sourceRef -> start_time) /  1000, sourceRef -> flags);
     if (pixelBuffer == NULL) {
       //  log4cplus_error(kModuleName, "%s: pixelbuffer is NULL status = %d",__func__,status);
         if (sourceRef) {
@@ -99,6 +105,9 @@ static void VideoDecoderCallback(void *decompressionOutputRefCon, void *sourceFr
     if (samplebuffer) {
         if ([decoder.delegate respondsToSelector:@selector(getVideoDecodeDataByVideoToolBox:)]) {
             MySampleBuffer mySamplebuffer = {0};
+//            CFArrayRef attachments = CMSampleBufferGetSampleAttachmentsArray(samplebuffer, YES);
+//            CFMutableDictionaryRef dict = (CFMutableDictionaryRef)CFArrayGetValueAtIndex(attachments, 0);
+//            CFDictionarySetValue(dict, kCMSampleAttachmentKey_DisplayImmediately, kCFBooleanTrue);
             mySamplebuffer.sampleBuffer = samplebuffer;
             mySamplebuffer.isFirstFrame= decoder -> _isFirstFrame;
             mySamplebuffer.serial = decoder -> packetSerial;
@@ -137,7 +146,6 @@ static void VideoDecoderCallback(void *decompressionOutputRefCon, void *sourceFr
     //decode begin
 //    pthread_mutex_lock(&_decoder_lock);
 
-    packetSerial = videoInfo -> serial;
 
     // get extra data
     if (videoInfo->extraData && videoInfo->extraDataSize) {
@@ -159,21 +167,31 @@ static void VideoDecoderCallback(void *decompressionOutputRefCon, void *sourceFr
 
     }
 
-    // create decoder
-    if (!_decoderSession) {
-        _decoderSession = [self createDecoderWithVideoInfo:videoInfo
+    if (!_decoderFormatDescription) {
+        
+        [self createCMVideoFormatDescriptionRef:videoInfo
                                               videoDescRef:&_decoderFormatDescription
                                                videoFormat:kCVPixelFormatType_420YpCbCr8BiPlanarFullRange
                                                       lock:_decoder_lock
-                                                  callback:VideoDecoderCallback
                                                decoderInfo:_decoderInfo];
+        count = YES;
     }
 
-    pthread_mutex_lock(&_decoder_lock);
-    if (!_decoderSession) {
-        pthread_mutex_unlock(&_decoder_lock);
-        return;
-    }
+//    // create decoder
+//    if (!_decoderSession) {
+//        _decoderSession = [self createDecoderWithVideoInfo:videoInfo
+//                                              videoDescRef:&_decoderFormatDescription
+//                                               videoFormat:kCVPixelFormatType_420YpCbCr8BiPlanarFullRange
+//                                                      lock:_decoder_lock
+//                                                  callback:VideoDecoderCallback
+//                                               decoderInfo:_decoderInfo];
+//    }
+
+//    pthread_mutex_lock(&_decoder_lock);
+//    if (!_decoderSession) {
+//        pthread_mutex_unlock(&_decoder_lock);
+//        return;
+//    }
 
     /*  If open B frame, the code will not be used.
     if(_decoderInfo.last_decode_pts != 0 && videoInfo->pts <= _decoderInfo.last_decode_pts){
@@ -183,15 +201,14 @@ static void VideoDecoderCallback(void *decompressionOutputRefCon, void *sourceFr
     }
      */
 
-    _decoderInfo.last_decode_pts = videoInfo->pts;
+//    _decoderInfo.last_decode_pts = videoInfo->pts;
 
     pthread_mutex_unlock(&_decoder_lock);
 
     // start decode
     [self startDecode:videoInfo
-              session:_decoderSession
                  lock:_decoder_lock];
-//    pthread_mutex_unlock(&_decoder_lock);
+    pthread_mutex_unlock(&_decoder_lock);
 }
 
 - (void)stopDecoder {
@@ -215,11 +232,24 @@ static void CFDictionarySetBoolean(CFMutableDictionaryRef dictionary, CFStringRe
 }
 
 #pragma mark Create / Destory decoder
-- (VTDecompressionSessionRef)createDecoderWithVideoInfo:(ParseVideoDataInfo *)videoInfo videoDescRef:(CMVideoFormatDescriptionRef *)videoDescRef videoFormat:(OSType)videoFormat lock:(pthread_mutex_t)lock callback:(VTDecompressionOutputCallback)callback decoderInfo:(DecoderInfo)decoderInfo {
+
+//static int decode_video(ParseVideoDataInfo* videoInfo, pthread_mutex_t lock) {
+//    int      ret            = 0;
+//    uint8_t *size_data      = NULL;
+//    int      size_data_size = 0;
+//
+//    if (!videoInfo || !videoInfo -> data) {
+//        return 0;
+//    }
+//    if (videoInfo -> videoFormat == H264EncodeFormat) {
+//        size_data =
+//    }
+//}
+- (void)createCMVideoFormatDescriptionRef:(ParseVideoDataInfo *)videoInfo videoDescRef:(CMVideoFormatDescriptionRef *)videoDescRef videoFormat:(OSType)videoFormat lock:(pthread_mutex_t)lock decoderInfo:(DecoderInfo)decoderInfo {
     pthread_mutex_lock(&lock);
 
     OSStatus status;
-    if (videoInfo->videoFormat == XDXH264EncodeFormat) {
+    if (videoInfo->videoFormat == H264EncodeFormat) {
         const uint8_t *const parameterSetPointers[2] = {decoderInfo.sps, decoderInfo.f_pps};
         const size_t parameterSetSizes[2] = {static_cast<size_t>(decoderInfo.sps_size), static_cast<size_t>(decoderInfo.f_pps_size)};
         status = CMVideoFormatDescriptionCreateFromH264ParameterSets(kCFAllocatorDefault,
@@ -229,7 +259,7 @@ static void CFDictionarySetBoolean(CFMutableDictionaryRef dictionary, CFStringRe
                                                                      4,
                                                                      videoDescRef);
     
-    }else if (videoInfo->videoFormat == XDXH265EncodeFormat) {
+    }else if (videoInfo->videoFormat == H265EncodeFormat) {
         if (decoderInfo.r_pps_size == 0) {
             const uint8_t *const parameterSetPointers[3] = {decoderInfo.vps, decoderInfo.sps, decoderInfo.f_pps};
             const size_t parameterSetSizes[3] = {static_cast<size_t>(decoderInfo.vps_size), static_cast<size_t>(decoderInfo.sps_size), static_cast<size_t>(decoderInfo.f_pps_size)};
@@ -269,56 +299,54 @@ static void CFDictionarySetBoolean(CFMutableDictionaryRef dictionary, CFStringRe
      //   log4cplus_error(kModuleName, "%s: NALU header error !",__func__);
         pthread_mutex_unlock(&lock);
         [self destoryDecoder];
-        return NULL;
+        return;
     }
-    int width = videoInfo -> width;
-    int height = videoInfo -> height;
-
-    double w_scaler = (float)960 / width;
-    width = 960;
-    height = height * w_scaler;
-
-    uint32_t pixelFormatType = videoFormat;
-//    CFDictionaryRef attrs    = CFDictionaryCreate(NULL, keys, values, 1, NULL, NULL);
-    CFMutableDictionaryRef destinationPixelBufferAttributes = CFDictionaryCreateMutable(
-                                                                 NULL,
-                                                                 0,
-                                                                 &kCFTypeDictionaryKeyCallBacks,
-                                                                 &kCFTypeDictionaryValueCallBacks);
-    CFDictionarySetSInt32(destinationPixelBufferAttributes,
-                          kCVPixelBufferPixelFormatTypeKey, kCVPixelFormatType_420YpCbCr8BiPlanarVideoRange);
-    CFDictionarySetSInt32(destinationPixelBufferAttributes,
-                          kCVPixelBufferWidthKey, width);
-    CFDictionarySetSInt32(destinationPixelBufferAttributes,
-                          kCVPixelBufferHeightKey, height);
-    CFDictionarySetBoolean(destinationPixelBufferAttributes,
-                          kCVPixelBufferOpenGLESCompatibilityKey, YES);
-
-    VTDecompressionOutputCallbackRecord callBackRecord;
-    callBackRecord.decompressionOutputCallback = callback;
-    callBackRecord.decompressionOutputRefCon   = (__bridge void *)self;
-
-    VTDecompressionSessionRef session;
-    status = VTDecompressionSessionCreate(kCFAllocatorDefault,
-                                          *videoDescRef,
-                                          NULL,
-                                          destinationPixelBufferAttributes,
-                                          &callBackRecord,
-                                          &session);
-
-    CFRelease(destinationPixelBufferAttributes);
     pthread_mutex_unlock(&lock);
-    if (status != noErr) {
-        //log4cplus_error(kModuleName, "%s: Create decoder failed",__func__);
-        [self destoryDecoder];
-        return NULL;
-    }
 
-    return session;
-}
-
-- (void)packetParse:(AVPacket)packet {
-   
+//    int width = videoInfo -> width;
+//    int height = videoInfo -> height;
+//
+//    double w_scaler = (float)960 / width;
+//    width = 960;
+//    height = height * w_scaler;
+//
+//    uint32_t pixelFormatType = videoFormat;
+////    CFDictionaryRef attrs    = CFDictionaryCreate(NULL, keys, values, 1, NULL, NULL);
+//    CFMutableDictionaryRef destinationPixelBufferAttributes = CFDictionaryCreateMutable(
+//                                                                 NULL,
+//                                                                 0,
+//                                                                 &kCFTypeDictionaryKeyCallBacks,
+//                                                                 &kCFTypeDictionaryValueCallBacks);
+//    CFDictionarySetSInt32(destinationPixelBufferAttributes,
+//                          kCVPixelBufferPixelFormatTypeKey, kCVPixelFormatType_420YpCbCr8BiPlanarVideoRange);
+//    CFDictionarySetSInt32(destinationPixelBufferAttributes,
+//                          kCVPixelBufferWidthKey, width);
+//    CFDictionarySetSInt32(destinationPixelBufferAttributes,
+//                          kCVPixelBufferHeightKey, height);
+//    CFDictionarySetBoolean(destinationPixelBufferAttributes,
+//                          kCVPixelBufferOpenGLESCompatibilityKey, YES);
+//
+//    VTDecompressionOutputCallbackRecord callBackRecord;
+//    callBackRecord.decompressionOutputCallback = callback;
+//    callBackRecord.decompressionOutputRefCon   = (__bridge void *)self;
+//
+//    VTDecompressionSessionRef session;
+//    status = VTDecompressionSessionCreate(kCFAllocatorDefault,
+//                                          *videoDescRef,
+//                                          NULL,
+//                                          destinationPixelBufferAttributes,
+//                                          &callBackRecord,
+//                                          &session);
+//
+//    CFRelease(destinationPixelBufferAttributes);
+//    pthread_mutex_unlock(&lock);
+//    if (status != noErr) {
+//        //log4cplus_error(kModuleName, "%s: Create decoder failed",__func__);
+//        [self destoryDecoder];
+//        return NULL;
+//    }
+//
+//    return session;
 }
 
 - (void)destoryDecoder {
@@ -418,7 +446,7 @@ static void CFDictionarySetBoolean(CFMutableDictionaryRef dictionary, CFStringRe
     for (int i = 0; i < size; i ++) {
         if (i >= 3) {
             if (data[i] == 0x01 && data[i - 1] == 0x00 && data[i - 2] == 0x00 && data[i - 3] == 0x00) {
-                if (videoFormat == XDXH264EncodeFormat) {
+                if (videoFormat == H264EncodeFormat) {
                     if (startCodeSPSIndex == 0) {
                         startCodeSPSIndex = i;
                     }
@@ -426,7 +454,7 @@ static void CFDictionarySetBoolean(CFMutableDictionaryRef dictionary, CFStringRe
                         startCodeFPPSIndex = i;
                     }
 
-                }else if (videoFormat == XDXH265EncodeFormat) {
+                }else if (videoFormat == H265EncodeFormat) {
                     if (startCodeVPSIndex == 0) {
                         startCodeVPSIndex = i;
                         continue;
@@ -450,7 +478,7 @@ static void CFDictionarySetBoolean(CFMutableDictionaryRef dictionary, CFStringRe
     int spsSize = startCodeFPPSIndex - startCodeSPSIndex - 4;
     decoderInfo->sps_size = spsSize;
 
-    if (videoFormat == XDXH264EncodeFormat) {
+    if (videoFormat == H264EncodeFormat) {
         int f_ppsSize = size - (startCodeFPPSIndex + 1);
         decoderInfo->f_pps_size = f_ppsSize;
 
@@ -507,7 +535,7 @@ static void CFDictionarySetBoolean(CFMutableDictionaryRef dictionary, CFStringRe
 }
 
 #pragma mark Decode
-- (void)startDecode:(ParseVideoDataInfo *)videoInfo session:(VTDecompressionSessionRef)session lock:(pthread_mutex_t)lock {
+- (void)startDecode:(ParseVideoDataInfo *)videoInfo lock:(pthread_mutex_t)lock {
     if (videoInfo -> seekRequest) {
         return;
     }
@@ -520,11 +548,7 @@ static void CFDictionarySetBoolean(CFMutableDictionaryRef dictionary, CFStringRe
     uint8_t *tempData = (uint8_t *)malloc(size);
     memcpy(tempData, data, size);
 
-    DecodeVideoInfo *sourceRef = (DecodeVideoInfo *)malloc(sizeof(ParseVideoDataInfo));
-    sourceRef->outputPixelbuffer  = NULL;
-    sourceRef->rotate             = rotate;
-    sourceRef->pts                = videoInfo->pts;
-    sourceRef->fps                = videoInfo->fps;
+
 
     CMBlockBufferRef blockBuffer;
     OSStatus status = CMBlockBufferCreateWithMemoryBlock(kCFAllocatorDefault,
@@ -550,26 +574,35 @@ static void CFDictionarySetBoolean(CFMutableDictionaryRef dictionary, CFStringRe
                                            sampleSizeArray,
                                            &sampleBuffer);
 
-        if (status == kCMBlockBufferNoErr && sampleBuffer) {
-            VTDecodeFrameFlags flags   = kVTDecodeFrame_EnableAsynchronousDecompression;
-            VTDecodeInfoFlags  flagOut = 0;
-            OSStatus decodeStatus      = VTDecompressionSessionDecodeFrame(session,
-                                                                           sampleBuffer,
-                                                                           0,
-                                                                           sourceRef,
-                                                                           0);
-            if(decodeStatus == kVTInvalidSessionErr) {
-                pthread_mutex_unlock(&lock);
-                [self destoryDecoder];
-                if (blockBuffer)
-                    CFRelease(blockBuffer);
-                free(tempData);
-                tempData = NULL;
-                CFRelease(sampleBuffer);
-                return;
-            }
-            CFRelease(sampleBuffer);
+//        if (status == kCMBlockBufferNoErr && sampleBuffer) {
+//            VTDecodeFrameFlags flags   = kVTDecodeFrame_EnableAsynchronousDecompression;
+//            VTDecodeInfoFlags  flagOut = 0;
+//            OSStatus decodeStatus      = VTDecompressionSessionDecodeFrame(session,
+//                                                                           sampleBuffer,
+//                                                                           0,
+//                                                                           sourceRef,
+//                                                                           0);
+//            if(decodeStatus == kVTInvalidSessionErr) {
+//                pthread_mutex_unlock(&lock);
+//                [self destoryDecoder];
+//                if (blockBuffer)
+//                    CFRelease(blockBuffer);
+//                free(tempData);
+//                tempData = NULL;
+//                CFRelease(sampleBuffer);
+//                return;
+//            }
+//            CFRelease(sampleBuffer);
+//        }
+
+        if ([self.delegate respondsToSelector:@selector(getVideoDecodeDataByVideoToolBox:)]) {
+            MySampleBuffer mySamplebuffer = {0};
+            mySamplebuffer.sampleBuffer = sampleBuffer;
+            mySamplebuffer.serial =  videoInfo -> serial;
+            mySamplebuffer.flags = videoInfo -> flags;
+            [self.delegate getVideoDecodeDataByVideoToolBox:&mySamplebuffer];
         }
+        CFRelease(sampleBuffer);
     }
 
     if (blockBuffer) {

@@ -44,12 +44,10 @@
 }
 
 - (void)doneAction {
-    NSString *urlStr = [NSString stringWithFormat:@"%@", self.textView.text];
-    NSURL *url = [NSURL URLWithString:[urlStr stringByAddingPercentEncodingWithAllowedCharacters:[NSCharacterSet URLQueryAllowedCharacterSet]]];
-
-    DisplayViewController *displayVC = [[DisplayViewController alloc]initWithUrl:url];
+    DisplayViewController *displayVC = [[DisplayViewController alloc]initWithUrl:self.textView.text];
     displayVC.modalPresentationStyle = UIModalPresentationFullScreen;
     UINavigationController *navigationController = [[UINavigationController alloc]initWithRootViewController:displayVC];
+
 
     [self presentViewController:navigationController animated:YES completion:nil];
 }

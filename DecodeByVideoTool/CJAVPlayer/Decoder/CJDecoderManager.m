@@ -11,7 +11,7 @@
 @interface CJDecoderManager()<VideoToolBoxDecoderDeltegate,CJAudioDecoderDelegate>
 {
     AVFormatContext *avFormatContext;
-    AudioStreamBasicDescription asbd;
+    struct AudioDescription audioDesc;
 }
 
 /* decoder */
@@ -36,18 +36,7 @@
         self.audioDecoder = [[CJAudioDecoder alloc]initWithFormatContext:avFormatContext audioStreamIndex:[self.parseHandler getAudioStreamIndex]];
         self.audioDecoder.delegate = self;
 
-        AudioStreamBasicDescription ffmpegAudioFormat = {
-            .mSampleRate         = 48000,
-            .mFormatID           = kAudioFormatLinearPCM,
-            .mChannelsPerFrame   = 2,
-            .mFormatFlags        = kLinearPCMFormatFlagIsSignedInteger | kLinearPCMFormatFlagIsPacked,
-            .mBitsPerChannel     = 16,
-            .mBytesPerPacket     = 4,
-            .mBytesPerFrame      = 4,
-            .mFramesPerPacket    = 1,
-        };
-
-        asbd = ffmpegAudioFormat;
+        audioDesc = [self.audioDecoder getAudioDesc];
     }
     return self;
 }
@@ -117,23 +106,23 @@
     uint8_t * tmp = malloc(audioInfo -> size);
     memcpy(tmp, audioInfo -> data, audioInfo -> size);
 
-    AudioStreamBasicDescription * asbd = audioInfo -> asbd;
+    AudioStreamBasicDescription asbd = audioDesc.asbd;
 
     audioData.mBuffers[0].mData = tmp;
-    audioData.mBuffers[0].mNumberChannels = asbd -> mBitsPerChannel;
-    audioData.mBuffers[0].mDataByteSize = audioInfo -> size;
+    audioData.mBuffers[0].mNumberChannels = asbd.mBitsPerChannel;
+    audioData.mBuffers[0].mDataByteSize = audioInfo->size;
 
     CMBlockBufferRef blockBuffer = [self makeBlockBuffer:&audioData];
 
     CMSampleBufferRef sampleBuffer = NULL;
     CMFormatDescriptionRef format =NULL;
-    OSStatus status = CMAudioFormatDescriptionCreate(kCFAllocatorDefault, asbd,0, NULL, 0, NULL, NULL, &format);
+    OSStatus status = CMAudioFormatDescriptionCreate(kCFAllocatorDefault, &asbd,0, NULL, 0, NULL, NULL, &format);
 
     if (status != noErr) {
         NSLog(@"CMAudioFormatDescriptionCreate fail!");
     }
 
-    status = CMAudioSampleBufferCreateReadyWithPacketDescriptions(kCFAllocatorDefault, blockBuffer, format, audioInfo -> frameSize, CMTimeMakeWithSeconds(audioInfo -> pts, asbd -> mSampleRate), nil, &sampleBuffer);
+    status = CMAudioSampleBufferCreateReadyWithPacketDescriptions(kCFAllocatorDefault, blockBuffer, format, audioDesc.frameSize, CMTimeMakeWithSeconds(audioInfo -> pts, asbd.mSampleRate), nil, &sampleBuffer);
 
 
     if (status != noErr) {

@@ -9,6 +9,7 @@
 
 
 static int rendererSerial = 0;
+static int64_t startTime = 0;
 
 @interface CJAVPlayer()<CJDecoderManagerCallDelegate>
 {
@@ -19,7 +20,6 @@ static int rendererSerial = 0;
     BOOL isSeeking;
     BOOL isRunning;
     VideoState *videoState;
-    int64_t startTime;
     id timeObserve;
     dispatch_queue_t observeQueue;
     CMTime observeIntervalTime;
@@ -43,7 +43,7 @@ static int rendererSerial = 0;
 @end
 
 @implementation CJAVPlayer
-- (instancetype)initWithURL:(NSURL *)url layerFrame:(CGRect)frame{
+- (instancetype)initWithURLString:(NSString *)url layerFrame:(CGRect)frame{
     if (self = [super init]) {
         pthread_mutex_init(&audioMutex, NULL);
         pthread_mutex_init(&videoMutex, NULL);
@@ -71,10 +71,10 @@ static int rendererSerial = 0;
     self.audioPacketQueue = [[PacketQueue alloc]init];
 }
 
-- (void)preparePlayer:(NSURL *)url{
+- (void)preparePlayer:(NSString *)url{
 
     videoState = malloc(sizeof(VideoState));
-    self.decoderManager = [[CJDecoderManager alloc]initWithFilePath:url.relativePath videoState:videoState];
+    self.decoderManager = [[CJDecoderManager alloc]initWithFilePath:url videoState:videoState];
     self.decoderManager.delegate = self;
     formatContext = [self.decoderManager getFormatContext];
 
@@ -225,7 +225,7 @@ static int rendererSerial = 0;
         }
         pthread_mutex_unlock(&self -> videoMutex);
     }];
-//    av_usleep(10000);
+    av_usleep(10000);
     [self.rendererSynchronizer setRate:rate time:CMTimeMake(timeStamp * AV_TIME_BASE, AV_TIME_BASE)];
 }
 
@@ -247,30 +247,24 @@ static int rendererSerial = 0;
 -(void)CJDecoderGetVideoSampleBufferCallback:(MySampleBuffer *)sampleBuffer {
      //if the buffer serial is not equal renderSerial, throw it
     if (sampleBuffer -> serial != rendererSerial) {
-        NSLog(@"buffer != rendererSerial!");
         return;
     }
 
-    //if the buffer pts is samller than the rendererSynchronizer timebase, throw it
     if (CMTimeGetSeconds(CMSampleBufferGetPresentationTimeStamp(sampleBuffer -> sampleBuffer)) < videoState -> seekTimeStamp) {
-        NSLog(@"throw buffer < seekTimeStamp");
-   
-        return;
+        CFArrayRef attachments = CMSampleBufferGetSampleAttachmentsArray(sampleBuffer -> sampleBuffer, YES);
+        CFMutableDictionaryRef dict = (CFMutableDictionaryRef)CFArrayGetValueAtIndex(attachments, 0);
+        CFDictionarySetValue(dict, kCMSampleAttachmentKey_DoNotDisplay, kCFBooleanTrue);
     }
 
-    if (isSeeking) {
+    if (isSeeking && CMTimeGetSeconds(CMSampleBufferGetPresentationTimeStamp(sampleBuffer -> sampleBuffer)) >= videoState -> seekTimeStamp) {
         isSeeking = NO;
     }
-
 
     [self.playLayer enqueueSampleBuffer:sampleBuffer -> sampleBuffer];
 }
 
 - (void)CJDecoderGetAudioSampleBufferCallback:(MySampleBuffer *)sampleBuffer isFirstFrame:(BOOL)isFirstFrame {
-
-
     if (sampleBuffer -> serial != rendererSerial) {
-        NSLog(@"buffer != rendererSerial!");
         return;
     }
 

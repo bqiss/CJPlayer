@@ -17,6 +17,7 @@ typedef struct MySampleBuffer {
     BOOL isLastPacket;
     BOOL isFirstFrame;
     int64_t startTime;
+    int flags;
 }MySampleBuffer;
 
 
@@ -26,8 +27,8 @@ typedef enum : NSUInteger {
 } fileType;
 
 typedef enum : NSUInteger {
-    XDXH264EncodeFormat,
-    XDXH265EncodeFormat,
+    H264EncodeFormat,
+    H265EncodeFormat,
 } VideoEncodeFormat;
 
 typedef struct VideoState {

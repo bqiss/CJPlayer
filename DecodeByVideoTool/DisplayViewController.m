@@ -34,11 +34,11 @@
 
 
 
-- (instancetype)initWithUrl:(NSURL *)url {
+- (instancetype)initWithUrl:(NSString *)urlStr {
 
 
     if (self = [super init]) {
-        self.player = [[CJAVPlayer alloc]initWithURL:url layerFrame:self.view.layer.frame];
+        self.player = [[CJAVPlayer alloc]initWithURLString:urlStr layerFrame:self.view.layer.frame];
 
         [self.view.layer addSublayer:self.player.playLayer];
         [self setUI];
@@ -170,6 +170,7 @@
 
 - (void)backAction {
     [self.player removePlayer];
+//    [self.navigationController popViewControllerAnimated:YES];
     [self dismissViewControllerAnimated:YES completion:^{
 
     }];
