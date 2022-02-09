@@ -14,8 +14,8 @@
             filePath = "DecodeByVideoTool/CJAVPlayer/Decoder/CJAudioDecoder.mm"
             startingColumnNumber = "5"
             endingColumnNumber = "5"
-            startingLineNumber = "78"
-            endingLineNumber = "78"
+            startingLineNumber = "86"
+            endingLineNumber = "86"
             landmarkName = "CJAudioDecoder"
             landmarkType = "3">
          </BreakpointContent>
@@ -33,6 +33,22 @@
             startingLineNumber = "44"
             endingLineNumber = "44"
             landmarkName = "-imagePickerController:didFinishPickingMediaWithInfo:"
+            landmarkType = "7">
+         </BreakpointContent>
+      </BreakpointProxy>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            uuid = "E82BCFB9-A518-401D-AF11-759982033722"
+            shouldBeEnabled = "Yes"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "DecodeByVideoTool/CJAVPlayer/Decoder/FFmpegParseHandler.mm"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "136"
+            endingLineNumber = "136"
+            landmarkName = "-prepareParseWithPath:"
             landmarkType = "7">
          </BreakpointContent>
       </BreakpointProxy>

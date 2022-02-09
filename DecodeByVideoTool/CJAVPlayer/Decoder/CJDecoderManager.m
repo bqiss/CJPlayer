@@ -25,7 +25,7 @@
 @implementation CJDecoderManager
 
 #pragma mark init
-- (instancetype)initWithFilePath: (NSString *)path videoState:(VideoState *)videoState {
+- (instancetype)initWithFilePath: (NSString *)path videoState:(VideoState *)videoState usingBlock:(void (^)(BOOL audioInitialSuccess,BOOL videointialSuccess,BOOL parseHandlerInitialSuccess))block{
     if (self = [super init]) {
         self.parseHandler = [[FFmpegParseHandler alloc]initWithPath:path videoState:videoState];
         avFormatContext = [self.parseHandler getFormatContext];
@@ -34,8 +34,8 @@
         self.vtDecoder.delegate = self;
 
         self.audioDecoder = [[CJAudioDecoder alloc]initWithFormatContext:avFormatContext audioStreamIndex:[self.parseHandler getAudioStreamIndex]];
+        block(self.audioDecoder != NULL,self.vtDecoder != NULL,self.parseHandler != NULL);
         self.audioDecoder.delegate = self;
-
         audioDesc = [self.audioDecoder getAudioDesc];
     }
     return self;

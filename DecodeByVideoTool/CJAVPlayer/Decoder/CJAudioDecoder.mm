@@ -38,22 +38,28 @@ static int packetSerial = 0;
         m_base_time      = 0;
         m_isFirstFrame   = YES;
         pthread_mutex_init(&_decoder_lock, NULL);
-        [self initDecoder];
+        if (![self initDecoder]) {
+            return nil;
+        }
     }
     return self;
 }
 
-- (void)initDecoder {
+- (int)initDecoder {
     if (m_formatContext ==  NULL) {
-        return;
+        return 0;
     }
     AVStream *audioStream = m_formatContext->streams[m_audioStreamIndex];
     m_audioCodecContext = [self createAudioEncderWithFormatContext:m_formatContext
                                                             stream:audioStream
                                                   audioStreamIndex:m_audioStreamIndex];
+
+    if (!m_audioCodecContext ) {
+        return 0;
+    }
     if (!m_audioCodecContext) {
         NSLog(@"create audio codec failed");
-        return;
+        return 0;
     }
 
     // Get audio frame 
@@ -61,6 +67,7 @@ static int packetSerial = 0;
     if (!m_audioFrame) {
         NSLog(@"alloc audio frame failed");
         avcodec_close(m_audioCodecContext);
+        return 0;
     }
 
         audioDesc = {0};
@@ -74,6 +81,7 @@ static int packetSerial = 0;
                                                          1);
         audioDesc.out_linesize = out_linesize;
         audioDesc.out_buffer_size = out_buffer_size;
+    return 1;
 }
 
 #pragma mark - Public
@@ -133,6 +141,7 @@ static int packetSerial = 0;
     //    audioInfo.frameSize = audioCodecContext -> frame_size;
     //    audioInfo.serial = myPacket.serial;
     if (audioCodecContext == NULL) {
+        
         return;
     }
     int result = avcodec_send_packet(audioCodecContext, &packet);

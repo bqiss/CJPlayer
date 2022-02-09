@@ -51,40 +51,40 @@ static int64_t startTime = 0;
         queue = dispatch_queue_create("playerQueue", DISPATCH_QUEUE_SERIAL);
         videoGetBufferQueue = dispatch_queue_create("videoGetBufferQueue", DISPATCH_QUEUE_SERIAL);
         audioGetBufferQueue = dispatch_queue_create("audioGetBufferQueue", DISPATCH_QUEUE_SERIAL);
-        [self initLayerAndAudioRenderer:frame];
-        [self preparePlayer:url];
-        
+        [self preparePlayer:url frame:frame];
     }
     return self;
 }
 
-- (void)initLayerAndAudioRenderer: (CGRect)frame {
-    self.playLayer = [[CJAVPlaylayer alloc] init];
-    self.playLayer.frame = frame;
-    self.playLayer.position = CGPointMake(CGRectGetMidX(frame), CGRectGetMidY(frame));
-    self.playLayer.videoGravity = AVLayerVideoGravityResizeAspect;
-    self.playLayer.opaque = YES;
+- (void)preparePlayer:(NSString *)url frame:(CGRect)frame{
+    self.decoderManager = [[CJDecoderManager alloc]initWithFilePath:url videoState:videoState usingBlock:^(BOOL audioInitialSuccess, BOOL videointialSuccess, BOOL parseHandlerInitialSuccess){
+        if (!parseHandlerInitialSuccess) {
+            return;
+        }
+        self.rendererSynchronizer = [[AVSampleBufferRenderSynchronizer alloc]init];
 
-    self.audioRenderer = [[AVSampleBufferAudioRenderer alloc]init];
-    [self.playLayer addObserver:self forKeyPath:@"status" options:NSKeyValueObservingOptionNew context:nil];
-    [self.audioRenderer addObserver:self forKeyPath:@"status" options:NSKeyValueObservingOptionNew context:nil];
-    self.videoPacketQueue = [[PacketQueue alloc]init];
-    self.audioPacketQueue = [[PacketQueue alloc]init];
-}
+        if (audioInitialSuccess) {
+            self.audioRenderer = [[AVSampleBufferAudioRenderer alloc]init];
+            [self.audioRenderer addObserver:self forKeyPath:@"status" options:NSKeyValueObservingOptionNew context:nil];
+            [self.rendererSynchronizer addRenderer:self.audioRenderer];
+        }
 
-- (void)preparePlayer:(NSString *)url{
-
+        if (videointialSuccess) {
+            self.playLayer = [[CJAVPlaylayer alloc] init];
+            self.playLayer.frame = frame;
+            self.playLayer.position = CGPointMake(CGRectGetMidX(frame), CGRectGetMidY(frame));
+            self.playLayer.videoGravity = AVLayerVideoGravityResizeAspect;
+            self.playLayer.opaque = YES;
+            [self.playLayer addObserver:self forKeyPath:@"status" options:NSKeyValueObservingOptionNew context:nil];
+            [self.rendererSynchronizer addRenderer:self.playLayer];
+        }
+        self.videoPacketQueue = [[PacketQueue alloc]init];
+        self.audioPacketQueue = [[PacketQueue alloc]init];
+    }];
     videoState = malloc(sizeof(VideoState));
-    self.decoderManager = [[CJDecoderManager alloc]initWithFilePath:url videoState:videoState];
     self.decoderManager.delegate = self;
     formatContext = [self.decoderManager getFormatContext];
-
-    self.rendererSynchronizer = [[AVSampleBufferRenderSynchronizer alloc]init];
-    [self.rendererSynchronizer addRenderer:self.playLayer];
-    [self.rendererSynchronizer addRenderer:self.audioRenderer];
     self.rate = 1;
-    
-
 }
 
 #pragma  mark Public Method
@@ -220,6 +220,7 @@ static int64_t startTime = 0;
                     //if video finish
                     [self stopEnqueue];
                     self -> isRestartPlay = YES;
+                    self -> videoState -> parseEnd = NO;
                     break;
                 }
 

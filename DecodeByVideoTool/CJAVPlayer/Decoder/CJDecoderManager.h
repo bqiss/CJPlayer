@@ -27,7 +27,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property(nonatomic, assign) int64_t videoDuration;
 - (AVFormatContext *)getFormatContext;
 
-- (instancetype)initWithFilePath: (NSString *)path videoState:(VideoState *)videoState;
+- (instancetype)initWithFilePath: (NSString *)path videoState:(VideoState *)videoState usingBlock:(void (^)(BOOL audioInitialSuccess,BOOL videointialSuccess,BOOL parseHandlerInitialSuccess))block;
 
 /* Start decoding whether keyframe or not (decode video and audio) */
 - (void)startDecode:(VideoState *)videoState videoPakcetQueue:(PacketQueue *)videoPacketQueue audioPacketQueue:(PacketQueue *)audioPacketQueue;

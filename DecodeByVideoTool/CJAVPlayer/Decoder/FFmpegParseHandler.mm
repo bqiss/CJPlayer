@@ -89,7 +89,9 @@ static int GetAVStreamFPSTimeBase(AVStream *st) {
     if (self = [super init]) {
         parseQueue = dispatch_queue_create("parse_queue", DISPATCH_QUEUE_SERIAL);
         pthread_mutex_init(&mutex, NULL);
-        [self prepareParseWithPath:path];
+        if (![self prepareParseWithPath:path]) {
+            return nil;
+        }
     }
     return self;
 }
@@ -122,7 +124,7 @@ static int GetAVStreamFPSTimeBase(AVStream *st) {
 
 #pragma mark - Private
 #pragma mark Prepare
-- (void)prepareParseWithPath:(NSString *)path {
+- (int)prepareParseWithPath:(NSString *)path {
     
 
 
@@ -131,8 +133,7 @@ static int GetAVStreamFPSTimeBase(AVStream *st) {
 
     
     if (m_formatContext == NULL) {
-
-        return;
+        return 0;
     }
 
     // Get video stream index
@@ -151,8 +152,8 @@ static int GetAVStreamFPSTimeBase(AVStream *st) {
                                    sourceHeight:m_video_height
                                       sourceFps:m_video_fps];
     if (!isSupport) {
-        //log4cplus_error(kModuleName, "%s: Not support the video stream",__func__);
-        return;
+        NSLog(@"Not support the video stream");
+        return 1;
     }
 
     // Get audio stream index
@@ -165,9 +166,10 @@ static int GetAVStreamFPSTimeBase(AVStream *st) {
     isSupport = [self isSupportAudioStream:audioStream
                              formatContext:m_formatContext];
     if (!isSupport) {
-        //log4cplus_error(kModuleName, "%s: Not support the audio stream",__func__);
-        return;
+        NSLog(@"Not support the audio stream");
+        return 1;
     }
+    return 1;
 }
 
 - (AVFormatContext *)createFormatContextbyFilePath:(NSString *)filePath {
@@ -353,6 +355,7 @@ static int GetAVStreamFPSTimeBase(AVStream *st) {
                 [videoPacketQueue packet_queue_put:&myPacket];
                 [audioPacketQueue packet_queue_put:&myPacket];
                 videoState -> isSeekReq = NO;
+                videoState -> parseEnd = NO;
                 isNeedThrowPacket = YES;
 
             }
@@ -368,17 +371,45 @@ static int GetAVStreamFPSTimeBase(AVStream *st) {
             av_init_packet(&packet);
 
 
-            int size = av_read_frame(self->m_formatContext, &packet);
-            
-            if (size < 0 || packet.size < 0) {
-                [videoPacketQueue packet_queue_put_nullpacket:self->m_videoStreamIndex];
-                [audioPacketQueue packet_queue_put_nullpacket:self->m_audioStreamIndex];
-                av_usleep(10000);
-                continue;
-            }else {
+            ret = av_read_frame(self->m_formatContext, &packet);
+            if (ret < 0) {
+                int pb_eof = 0;
+                int pb_error = 0;
+                if ((ret == AVERROR_EOF || avio_feof(self -> m_formatContext->pb)) && !videoState -> parseEnd) {
+                    pb_eof = 1;
+                }
 
+                if (self -> m_formatContext->pb && self -> m_formatContext->pb->error) {
+                    pb_eof = 1;
+                    pb_error = self -> m_formatContext->pb->error;
+                }
+                if (ret == AVERROR_EXIT) {
+                    pb_eof = 1;
+                    pb_error = AVERROR_EXIT;
+                }
+
+                if (pb_eof) {
+                    if (self -> m_videoStreamIndex >= 0)
+                        [videoPacketQueue packet_queue_put_nullpacket:self->m_videoStreamIndex];
+                    if (self -> m_audioStreamIndex >= 0)
+                        [audioPacketQueue packet_queue_put_nullpacket:self->m_audioStreamIndex];
+                    videoState -> parseEnd = 1;
+                }
+
+                if (pb_error) {
+                    if (self -> m_videoStreamIndex >= 0)
+                        [videoPacketQueue packet_queue_put_nullpacket:self->m_videoStreamIndex];
+                    if (self -> m_audioStreamIndex >= 0)
+                        [audioPacketQueue packet_queue_put_nullpacket:self->m_audioStreamIndex];
+                    videoState -> parseEnd = 1;
+                    printf("read frame error!\n");
+                    break;
+                }
+
+                if (videoState -> parseEnd) {
+                    av_usleep(10000);
+                }
             }
-
 
             if (packet.stream_index == self->m_videoStreamIndex) {
                 MyPacket myPacket = {0};

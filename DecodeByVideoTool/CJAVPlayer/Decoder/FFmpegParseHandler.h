@@ -33,7 +33,9 @@ typedef enum : NSUInteger {
 
 typedef struct VideoState {
     BOOL isSeekReq;
+    BOOL isReadPacketEnd;
     BOOL quit;
+    BOOL parseEnd;
     BOOL audioRendererIsReadyForMoreData;
     Float64 seekTimeStamp;
 }VideoState;
